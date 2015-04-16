@@ -43,13 +43,26 @@
             this.reportLabel = new System.Windows.Forms.Label();
             this.nextButton = new System.Windows.Forms.Button();
             this.reportListBox = new System.Windows.Forms.ListBox();
+            this.configTabPage = new System.Windows.Forms.TabPage();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configureServersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.configTabPage = new System.Windows.Forms.TabPage();
-            this.configExceptionPanel = new System.Windows.Forms.Panel();
+            this.configTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.reportTypeLabel = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.startDateLabel = new System.Windows.Forms.Label();
+            this.endDateLabel = new System.Windows.Forms.Label();
+            this.startTimeLabel = new System.Windows.Forms.Label();
+            this.endTimeLabel = new System.Windows.Forms.Label();
+            this.printDateTimeLabel = new System.Windows.Forms.Label();
+            this.printedByLabel = new System.Windows.Forms.Label();
+            this.startDatePicker = new System.Windows.Forms.DateTimePicker();
+            this.endDatePicker = new System.Windows.Forms.DateTimePicker();
+            this.startTimePicker = new System.Windows.Forms.DateTimePicker();
+            this.endTimePicker = new System.Windows.Forms.DateTimePicker();
+            this.printDateTimePicker = new System.Windows.Forms.DateTimePicker();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
@@ -58,8 +71,9 @@
             this.homePanel.SuspendLayout();
             this.selectReportTabPage.SuspendLayout();
             this.selectReportTableLayoutPanel.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
             this.configTabPage.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
+            this.configTableLayoutPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripContainer1
@@ -248,6 +262,7 @@
             this.nextButton.TabIndex = 5;
             this.nextButton.Text = "Next";
             this.nextButton.UseVisualStyleBackColor = true;
+            this.nextButton.Click += new System.EventHandler(this.nextButton_Click);
             // 
             // reportListBox
             // 
@@ -264,6 +279,16 @@
             this.reportListBox.Name = "reportListBox";
             this.reportListBox.Size = new System.Drawing.Size(380, 279);
             this.reportListBox.TabIndex = 0;
+            // 
+            // configTabPage
+            // 
+            this.configTabPage.Controls.Add(this.configTableLayoutPanel);
+            this.configTabPage.Location = new System.Drawing.Point(4, 5);
+            this.configTabPage.Name = "configTabPage";
+            this.configTabPage.Size = new System.Drawing.Size(776, 524);
+            this.configTabPage.TabIndex = 2;
+            this.configTabPage.Text = "tabPage1";
+            this.configTabPage.UseVisualStyleBackColor = true;
             // 
             // menuStrip1
             // 
@@ -310,24 +335,176 @@
             this.configureServersToolStripMenuItem.Text = "Configure Servers";
             this.configureServersToolStripMenuItem.Click += new System.EventHandler(this.configureServersToolStripMenuItem_Click);
             // 
-            // configTabPage
+            // configTableLayoutPanel
             // 
-            this.configTabPage.Controls.Add(this.configExceptionPanel);
-            this.configTabPage.Location = new System.Drawing.Point(4, 5);
-            this.configTabPage.Name = "configTabPage";
-            this.configTabPage.Size = new System.Drawing.Size(776, 524);
-            this.configTabPage.TabIndex = 2;
-            this.configTabPage.Text = "tabPage1";
-            this.configTabPage.UseVisualStyleBackColor = true;
+            this.configTableLayoutPanel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.configTableLayoutPanel.ColumnCount = 2;
+            this.configTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.configTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.configTableLayoutPanel.Controls.Add(this.printDateTimePicker, 0, 6);
+            this.configTableLayoutPanel.Controls.Add(this.endTimePicker, 1, 4);
+            this.configTableLayoutPanel.Controls.Add(this.startTimePicker, 0, 4);
+            this.configTableLayoutPanel.Controls.Add(this.endDatePicker, 1, 2);
+            this.configTableLayoutPanel.Controls.Add(this.endDateLabel, 1, 1);
+            this.configTableLayoutPanel.Controls.Add(this.reportTypeLabel, 0, 0);
+            this.configTableLayoutPanel.Controls.Add(this.button1, 1, 7);
+            this.configTableLayoutPanel.Controls.Add(this.startDateLabel, 0, 1);
+            this.configTableLayoutPanel.Controls.Add(this.startTimeLabel, 0, 3);
+            this.configTableLayoutPanel.Controls.Add(this.endTimeLabel, 1, 3);
+            this.configTableLayoutPanel.Controls.Add(this.printDateTimeLabel, 0, 5);
+            this.configTableLayoutPanel.Controls.Add(this.printedByLabel, 1, 5);
+            this.configTableLayoutPanel.Controls.Add(this.startDatePicker, 0, 2);
+            this.configTableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.configTableLayoutPanel.Location = new System.Drawing.Point(0, 0);
+            this.configTableLayoutPanel.Name = "configTableLayoutPanel";
+            this.configTableLayoutPanel.RowCount = 8;
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 53F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 53F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 53F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 53F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 53F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 53F));
+            this.configTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.configTableLayoutPanel.Size = new System.Drawing.Size(776, 524);
+            this.configTableLayoutPanel.TabIndex = 1;
             // 
-            // configExceptionPanel
+            // reportTypeLabel
             // 
-            this.configExceptionPanel.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.configExceptionPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.configExceptionPanel.Location = new System.Drawing.Point(0, 0);
-            this.configExceptionPanel.Name = "configExceptionPanel";
-            this.configExceptionPanel.Size = new System.Drawing.Size(776, 524);
-            this.configExceptionPanel.TabIndex = 2;
+            this.reportTypeLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.reportTypeLabel.AutoSize = true;
+            this.configTableLayoutPanel.SetColumnSpan(this.reportTypeLabel, 2);
+            this.reportTypeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.reportTypeLabel.Location = new System.Drawing.Point(287, 31);
+            this.reportTypeLabel.Name = "reportTypeLabel";
+            this.reportTypeLabel.Size = new System.Drawing.Size(202, 37);
+            this.reportTypeLabel.TabIndex = 2;
+            this.reportTypeLabel.Text = "Report Type";
+            // 
+            // button1
+            // 
+            this.button1.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.button1.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.button1.Location = new System.Drawing.Point(623, 448);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(150, 46);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "Next";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // startDateLabel
+            // 
+            this.startDateLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.startDateLabel.AutoSize = true;
+            this.startDateLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.startDateLabel.Location = new System.Drawing.Point(3, 116);
+            this.startDateLabel.Name = "startDateLabel";
+            this.startDateLabel.Size = new System.Drawing.Size(98, 20);
+            this.startDateLabel.TabIndex = 6;
+            this.startDateLabel.Text = "Start Date:";
+            // 
+            // endDateLabel
+            // 
+            this.endDateLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.endDateLabel.AutoSize = true;
+            this.endDateLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.endDateLabel.Location = new System.Drawing.Point(391, 116);
+            this.endDateLabel.Name = "endDateLabel";
+            this.endDateLabel.Size = new System.Drawing.Size(90, 20);
+            this.endDateLabel.TabIndex = 7;
+            this.endDateLabel.Text = "End Date:";
+            // 
+            // startTimeLabel
+            // 
+            this.startTimeLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.startTimeLabel.AutoSize = true;
+            this.startTimeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.startTimeLabel.Location = new System.Drawing.Point(3, 222);
+            this.startTimeLabel.Name = "startTimeLabel";
+            this.startTimeLabel.Size = new System.Drawing.Size(97, 20);
+            this.startTimeLabel.TabIndex = 8;
+            this.startTimeLabel.Text = "Start Time:";
+            // 
+            // endTimeLabel
+            // 
+            this.endTimeLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.endTimeLabel.AutoSize = true;
+            this.endTimeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.endTimeLabel.Location = new System.Drawing.Point(391, 222);
+            this.endTimeLabel.Name = "endTimeLabel";
+            this.endTimeLabel.Size = new System.Drawing.Size(89, 20);
+            this.endTimeLabel.TabIndex = 9;
+            this.endTimeLabel.Text = "End Time:";
+            // 
+            // printDateTimeLabel
+            // 
+            this.printDateTimeLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.printDateTimeLabel.AutoSize = true;
+            this.printDateTimeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.printDateTimeLabel.Location = new System.Drawing.Point(3, 328);
+            this.printDateTimeLabel.Name = "printDateTimeLabel";
+            this.printDateTimeLabel.Size = new System.Drawing.Size(138, 20);
+            this.printDateTimeLabel.TabIndex = 10;
+            this.printDateTimeLabel.Text = "Print Date Time:";
+            // 
+            // printedByLabel
+            // 
+            this.printedByLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.printedByLabel.AutoSize = true;
+            this.printedByLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.printedByLabel.Location = new System.Drawing.Point(391, 328);
+            this.printedByLabel.Name = "printedByLabel";
+            this.printedByLabel.Size = new System.Drawing.Size(96, 20);
+            this.printedByLabel.TabIndex = 11;
+            this.printedByLabel.Text = "Printed By:";
+            // 
+            // startDatePicker
+            // 
+            this.startDatePicker.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.startDatePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.startDatePicker.Location = new System.Drawing.Point(3, 169);
+            this.startDatePicker.Name = "startDatePicker";
+            this.startDatePicker.Size = new System.Drawing.Size(350, 20);
+            this.startDatePicker.TabIndex = 12;
+            // 
+            // endDatePicker
+            // 
+            this.endDatePicker.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.endDatePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.endDatePicker.Location = new System.Drawing.Point(391, 169);
+            this.endDatePicker.Name = "endDatePicker";
+            this.endDatePicker.Size = new System.Drawing.Size(350, 20);
+            this.endDatePicker.TabIndex = 13;
+            // 
+            // startTimePicker
+            // 
+            this.startTimePicker.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.startTimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Time;
+            this.startTimePicker.Location = new System.Drawing.Point(3, 275);
+            this.startTimePicker.Name = "startTimePicker";
+            this.startTimePicker.Size = new System.Drawing.Size(350, 20);
+            this.startTimePicker.TabIndex = 14;
+            // 
+            // endTimePicker
+            // 
+            this.endTimePicker.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.endTimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Time;
+            this.endTimePicker.Location = new System.Drawing.Point(391, 275);
+            this.endTimePicker.Name = "endTimePicker";
+            this.endTimePicker.Size = new System.Drawing.Size(350, 20);
+            this.endTimePicker.TabIndex = 15;
+            // 
+            // printDateTimePicker
+            // 
+            this.printDateTimePicker.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.printDateTimePicker.CustomFormat = "M/dd/yyyy h:mm tt";
+            this.printDateTimePicker.Enabled = false;
+            this.printDateTimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.printDateTimePicker.Location = new System.Drawing.Point(3, 381);
+            this.printDateTimePicker.Name = "printDateTimePicker";
+            this.printDateTimePicker.Size = new System.Drawing.Size(350, 20);
+            this.printDateTimePicker.TabIndex = 16;
+            this.printDateTimePicker.Value = new System.DateTime(2015, 4, 16, 9, 55, 25, 0);
             // 
             // ReportForm
             // 
@@ -355,9 +532,11 @@
             this.selectReportTabPage.ResumeLayout(false);
             this.selectReportTableLayoutPanel.ResumeLayout(false);
             this.selectReportTableLayoutPanel.PerformLayout();
+            this.configTabPage.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.configTabPage.ResumeLayout(false);
+            this.configTableLayoutPanel.ResumeLayout(false);
+            this.configTableLayoutPanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -385,7 +564,20 @@
         private System.Windows.Forms.Button nextButton;
         private System.Windows.Forms.ListBox reportListBox;
         private System.Windows.Forms.TabPage configTabPage;
-        private System.Windows.Forms.Panel configExceptionPanel;
+        private System.Windows.Forms.TableLayoutPanel configTableLayoutPanel;
+        private System.Windows.Forms.Label reportTypeLabel;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.DateTimePicker endDatePicker;
+        private System.Windows.Forms.Label endDateLabel;
+        private System.Windows.Forms.Label startDateLabel;
+        private System.Windows.Forms.Label startTimeLabel;
+        private System.Windows.Forms.Label endTimeLabel;
+        private System.Windows.Forms.Label printDateTimeLabel;
+        private System.Windows.Forms.Label printedByLabel;
+        private System.Windows.Forms.DateTimePicker startDatePicker;
+        private System.Windows.Forms.DateTimePicker startTimePicker;
+        private System.Windows.Forms.DateTimePicker printDateTimePicker;
+        private System.Windows.Forms.DateTimePicker endTimePicker;
     }
 }
 

@@ -45,9 +45,11 @@ namespace ReportAppTest
 
         private void confirmButton_Click(object sender, EventArgs e)
         {
-
             db.StoreConnectionStrings(userIDTextBox.Text, passwordTextBox.Text);
-            tabControl1.SelectTab(1);
+            if (db.CONNECTION_SUCCESS)
+            {
+                tabControl1.SelectTab(1);
+            }
                 /*try
                 {
                     for (int i = 0; i < us.ServerCount; i++)
@@ -66,6 +68,18 @@ namespace ReportAppTest
                 {
                     MessageBox.Show("INVALID CONNECTION: Check Server and Database Parameters");
                 }*/
+        }
+
+        private void nextButton_Click(object sender, EventArgs e)
+        {
+            if (reportListBox.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a report type.", "No Server Selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            reportTypeLabel.Text = reportListBox.Text;
+            this.printDateTimePicker.Value = DateTime.Now;
+            this.tabControl1.SelectTab(2);
         }
     }
 }
