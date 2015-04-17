@@ -41,6 +41,7 @@ namespace ReportAppTest
 
         public void StoreConnectionStrings(String ID, String pass)
         {
+            uSettings.Reload();
             if (ID.Equals("") || pass.Equals(""))
             {
                 MessageBox.Show("Enter Username and Password");
@@ -74,8 +75,14 @@ namespace ReportAppTest
                 MessageBox.Show("INVALID CONNECTION: Server " + (index+1) + "\nIf all servers cannot connect, check User ID and Password",
                     "CONNECTION ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.CONNECTION_SUCCESS = false;
+                this.RemoveConnections();
                 return false;
             }
+        }
+
+        public void RemoveConnections()
+        {
+                sqlConns.RemoveRange(0, sqlConns.Count);
         }
 
         public void ExecuteQueries(int index)

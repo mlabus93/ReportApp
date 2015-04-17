@@ -45,29 +45,12 @@ namespace ReportAppTest
 
         private void confirmButton_Click(object sender, EventArgs e)
         {
+            us.Reload();
             db.StoreConnectionStrings(userIDTextBox.Text, passwordTextBox.Text);
             if (db.CONNECTION_SUCCESS)
             {
                 tabControl1.SelectTab(1);
             }
-                /*try
-                {
-                    for (int i = 0; i < us.ServerCount; i++)
-                    {
-                        using (var connection = Database.CreateSqlConnection(userIDTextBox.Text, passwordTextBox.Text, us.ServerName[i], us.Database))
-                        {
-                            connection.Open();
-                            MessageBox.Show("Connnection Established", "CONNECTED", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            connection.Close();
-                        }
-                        
-                    }
-                    tabControl1.SelectTab(1);
-                }
-                catch (SqlException)
-                {
-                    MessageBox.Show("INVALID CONNECTION: Check Server and Database Parameters");
-                }*/
         }
 
         private void nextButton_Click(object sender, EventArgs e)
@@ -80,6 +63,18 @@ namespace ReportAppTest
             reportTypeLabel.Text = reportListBox.Text;
             this.printDateTimePicker.Value = DateTime.Now;
             this.tabControl1.SelectTab(2);
+        }
+
+        private void reportPanelPrevButton_Click(object sender, EventArgs e)
+        {
+            db.CONNECTION_SUCCESS = false;
+            db.RemoveConnections();
+            this.tabControl1.SelectTab(0);
+        }
+
+        private void configPanelPrevButton_Click(object sender, EventArgs e)
+        {
+            this.tabControl1.SelectTab(1);
         }
     }
 }
