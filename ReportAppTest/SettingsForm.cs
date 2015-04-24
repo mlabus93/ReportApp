@@ -197,7 +197,6 @@ namespace ReportAppTest
             us.SettingsFlag = true;
             
             us.Save();
-            
             this.Close();
         }
 
