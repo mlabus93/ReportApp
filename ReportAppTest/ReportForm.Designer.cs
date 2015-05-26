@@ -70,22 +70,27 @@
             this.selectFacilityNextBtn = new System.Windows.Forms.Button();
             this.unitActivityRptTab = new System.Windows.Forms.TabPage();
             this.unitActivityPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.roomListBox = new System.Windows.Forms.ListBox();
             this.callTypeListBox = new System.Windows.Forms.ListBox();
-            this.zoneListBox = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.unitActivityLabel = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.unitActivityPrevButton = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
+            this.facilityComboBox = new System.Windows.Forms.ComboBox();
+            this.confirmFacilityButton = new System.Windows.Forms.Button();
+            this.zoneListBox = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.roomListBox = new System.Windows.Forms.ListBox();
+            this.reportNextButton = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.reportTab = new System.Windows.Forms.TabPage();
+            this.reportPanel = new System.Windows.Forms.Panel();
+            this.reportViewer1 = new Microsoft.Reporting.WinForms.ReportViewer();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configureServersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.facilityComboBox = new System.Windows.Forms.ComboBox();
             this.userSettingsBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -101,6 +106,9 @@
             this.selectFacilityTableLayoutPanel.SuspendLayout();
             this.unitActivityRptTab.SuspendLayout();
             this.unitActivityPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.reportTab.SuspendLayout();
+            this.reportPanel.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.userSettingsBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -134,6 +142,7 @@
             this.tabControl1.Controls.Add(this.configTabPage);
             this.tabControl1.Controls.Add(this.selectFacilityTab);
             this.tabControl1.Controls.Add(this.unitActivityRptTab);
+            this.tabControl1.Controls.Add(this.reportTab);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.ItemSize = new System.Drawing.Size(0, 1);
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
@@ -623,20 +632,23 @@
             // unitActivityPanel
             // 
             this.unitActivityPanel.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.unitActivityPanel.ColumnCount = 2;
-            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.unitActivityPanel.Controls.Add(this.roomListBox, 1, 5);
+            this.unitActivityPanel.ColumnCount = 3;
+            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 64.85788F));
+            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35.14212F));
+            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 410F));
             this.unitActivityPanel.Controls.Add(this.callTypeListBox, 0, 5);
-            this.unitActivityPanel.Controls.Add(this.zoneListBox, 1, 2);
-            this.unitActivityPanel.Controls.Add(this.label1, 1, 1);
             this.unitActivityPanel.Controls.Add(this.unitActivityLabel, 0, 0);
-            this.unitActivityPanel.Controls.Add(this.button1, 1, 7);
             this.unitActivityPanel.Controls.Add(this.label3, 0, 1);
             this.unitActivityPanel.Controls.Add(this.unitActivityPrevButton, 0, 7);
             this.unitActivityPanel.Controls.Add(this.label7, 0, 4);
-            this.unitActivityPanel.Controls.Add(this.label5, 1, 4);
             this.unitActivityPanel.Controls.Add(this.facilityComboBox, 0, 2);
+            this.unitActivityPanel.Controls.Add(this.confirmFacilityButton, 0, 3);
+            this.unitActivityPanel.Controls.Add(this.zoneListBox, 2, 2);
+            this.unitActivityPanel.Controls.Add(this.label1, 2, 1);
+            this.unitActivityPanel.Controls.Add(this.label5, 2, 4);
+            this.unitActivityPanel.Controls.Add(this.roomListBox, 2, 5);
+            this.unitActivityPanel.Controls.Add(this.reportNextButton, 2, 7);
+            this.unitActivityPanel.Controls.Add(this.pictureBox1, 1, 3);
             this.unitActivityPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.unitActivityPanel.Location = new System.Drawing.Point(0, 0);
             this.unitActivityPanel.Name = "unitActivityPanel";
@@ -652,20 +664,9 @@
             this.unitActivityPanel.Size = new System.Drawing.Size(776, 524);
             this.unitActivityPanel.TabIndex = 2;
             // 
-            // roomListBox
-            // 
-            this.roomListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.roomListBox.FormattingEnabled = true;
-            this.roomListBox.ItemHeight = 16;
-            this.roomListBox.Location = new System.Drawing.Point(391, 315);
-            this.roomListBox.Name = "roomListBox";
-            this.unitActivityPanel.SetRowSpan(this.roomListBox, 2);
-            this.roomListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-            this.roomListBox.Size = new System.Drawing.Size(355, 100);
-            this.roomListBox.TabIndex = 22;
-            // 
             // callTypeListBox
             // 
+            this.unitActivityPanel.SetColumnSpan(this.callTypeListBox, 2);
             this.callTypeListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.callTypeListBox.FormattingEnabled = true;
             this.callTypeListBox.ItemHeight = 16;
@@ -676,51 +677,17 @@
             this.callTypeListBox.Size = new System.Drawing.Size(355, 100);
             this.callTypeListBox.TabIndex = 21;
             // 
-            // zoneListBox
-            // 
-            this.zoneListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.zoneListBox.FormattingEnabled = true;
-            this.zoneListBox.ItemHeight = 16;
-            this.zoneListBox.Location = new System.Drawing.Point(391, 156);
-            this.zoneListBox.Name = "zoneListBox";
-            this.unitActivityPanel.SetRowSpan(this.zoneListBox, 2);
-            this.zoneListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-            this.zoneListBox.Size = new System.Drawing.Size(355, 100);
-            this.zoneListBox.TabIndex = 20;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(391, 116);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(108, 20);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "Unit (Team):";
-            // 
             // unitActivityLabel
             // 
             this.unitActivityLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.unitActivityLabel.AutoSize = true;
-            this.unitActivityPanel.SetColumnSpan(this.unitActivityLabel, 2);
+            this.unitActivityPanel.SetColumnSpan(this.unitActivityLabel, 3);
             this.unitActivityLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.unitActivityLabel.Location = new System.Drawing.Point(234, 31);
             this.unitActivityLabel.Name = "unitActivityLabel";
             this.unitActivityLabel.Size = new System.Drawing.Size(307, 37);
             this.unitActivityLabel.TabIndex = 2;
             this.unitActivityLabel.Text = "Unit Activity Report";
-            // 
-            // button1
-            // 
-            this.button1.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.button1.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button1.Location = new System.Drawing.Point(623, 448);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(150, 46);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "Next";
-            this.button1.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -756,16 +723,130 @@
             this.label7.TabIndex = 11;
             this.label7.Text = "Call Type/Processes:";
             // 
+            // facilityComboBox
+            // 
+            this.unitActivityPanel.SetColumnSpan(this.facilityComboBox, 2);
+            this.facilityComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.facilityComboBox.FormattingEnabled = true;
+            this.facilityComboBox.Location = new System.Drawing.Point(3, 156);
+            this.facilityComboBox.Name = "facilityComboBox";
+            this.facilityComboBox.Size = new System.Drawing.Size(355, 21);
+            this.facilityComboBox.TabIndex = 23;
+            this.facilityComboBox.SelectedIndexChanged += new System.EventHandler(this.facilityComboBox_SelectedIndexChanged);
+            // 
+            // confirmFacilityButton
+            // 
+            this.confirmFacilityButton.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.confirmFacilityButton.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.confirmFacilityButton.Location = new System.Drawing.Point(31, 215);
+            this.confirmFacilityButton.Name = "confirmFacilityButton";
+            this.confirmFacilityButton.Size = new System.Drawing.Size(175, 35);
+            this.confirmFacilityButton.TabIndex = 24;
+            this.confirmFacilityButton.Text = "Confirm Facility Settings";
+            this.confirmFacilityButton.UseVisualStyleBackColor = true;
+            this.confirmFacilityButton.Click += new System.EventHandler(this.confirmFacilityButton_Click);
+            // 
+            // zoneListBox
+            // 
+            this.zoneListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.zoneListBox.FormattingEnabled = true;
+            this.zoneListBox.ItemHeight = 16;
+            this.zoneListBox.Location = new System.Drawing.Point(368, 156);
+            this.zoneListBox.Name = "zoneListBox";
+            this.unitActivityPanel.SetRowSpan(this.zoneListBox, 2);
+            this.zoneListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.zoneListBox.Size = new System.Drawing.Size(355, 100);
+            this.zoneListBox.TabIndex = 20;
+            this.zoneListBox.SelectedIndexChanged += new System.EventHandler(this.zoneListBox_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(368, 116);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(108, 20);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Unit (Team):";
+            // 
             // label5
             // 
             this.label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(391, 275);
+            this.label5.Location = new System.Drawing.Point(368, 275);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(61, 20);
             this.label5.TabIndex = 9;
             this.label5.Text = "Room:";
+            // 
+            // roomListBox
+            // 
+            this.roomListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.roomListBox.FormattingEnabled = true;
+            this.roomListBox.ItemHeight = 16;
+            this.roomListBox.Location = new System.Drawing.Point(368, 315);
+            this.roomListBox.Name = "roomListBox";
+            this.unitActivityPanel.SetRowSpan(this.roomListBox, 2);
+            this.roomListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.roomListBox.Size = new System.Drawing.Size(355, 100);
+            this.roomListBox.TabIndex = 22;
+            this.roomListBox.SelectedIndexChanged += new System.EventHandler(this.roomListBox_SelectedIndexChanged);
+            // 
+            // reportNextButton
+            // 
+            this.reportNextButton.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.reportNextButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.reportNextButton.Location = new System.Drawing.Point(623, 448);
+            this.reportNextButton.Name = "reportNextButton";
+            this.reportNextButton.Size = new System.Drawing.Size(150, 46);
+            this.reportNextButton.TabIndex = 5;
+            this.reportNextButton.Text = "Next";
+            this.reportNextButton.UseVisualStyleBackColor = true;
+            this.reportNextButton.Click += new System.EventHandler(this.reportNextButton_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.pictureBox1.InitialImage = null;
+            this.pictureBox1.Location = new System.Drawing.Point(240, 216);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(32, 32);
+            this.pictureBox1.TabIndex = 25;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.WaitOnLoad = true;
+            // 
+            // reportTab
+            // 
+            this.reportTab.Controls.Add(this.reportPanel);
+            this.reportTab.Location = new System.Drawing.Point(4, 5);
+            this.reportTab.Name = "reportTab";
+            this.reportTab.Size = new System.Drawing.Size(776, 524);
+            this.reportTab.TabIndex = 5;
+            this.reportTab.Text = "tabPage1";
+            this.reportTab.UseVisualStyleBackColor = true;
+            // 
+            // reportPanel
+            // 
+            this.reportPanel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.reportPanel.Controls.Add(this.reportViewer1);
+            this.reportPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.reportPanel.Location = new System.Drawing.Point(0, 0);
+            this.reportPanel.Name = "reportPanel";
+            this.reportPanel.Size = new System.Drawing.Size(776, 524);
+            this.reportPanel.TabIndex = 2;
+            // 
+            // reportViewer1
+            // 
+            this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.reportViewer1.Location = new System.Drawing.Point(0, 0);
+            this.reportViewer1.Name = "reportViewer1";
+            this.reportViewer1.ProcessingMode = Microsoft.Reporting.WinForms.ProcessingMode.Remote;
+            this.reportViewer1.ServerReport.ReportPath = "/R5Reports/Unit Activity Report";
+            this.reportViewer1.ServerReport.ReportServerUrl = new System.Uri("http://REPORT2:80/ReportServer", System.UriKind.Absolute);
+            this.reportViewer1.Size = new System.Drawing.Size(776, 524);
+            this.reportViewer1.TabIndex = 0;
             // 
             // menuStrip1
             // 
@@ -812,16 +893,6 @@
             this.configureServersToolStripMenuItem.Text = "Configure Servers";
             this.configureServersToolStripMenuItem.Click += new System.EventHandler(this.configureServersToolStripMenuItem_Click);
             // 
-            // facilityComboBox
-            // 
-            this.facilityComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.facilityComboBox.FormattingEnabled = true;
-            this.facilityComboBox.Location = new System.Drawing.Point(3, 156);
-            this.facilityComboBox.Name = "facilityComboBox";
-            this.facilityComboBox.Size = new System.Drawing.Size(355, 21);
-            this.facilityComboBox.TabIndex = 23;
-            this.facilityComboBox.SelectedIndexChanged += new System.EventHandler(this.facilityComboBox_SelectedIndexChanged);
-            // 
             // userSettingsBindingSource
             // 
             this.userSettingsBindingSource.DataSource = typeof(ReportAppTest.UserSettings);
@@ -861,6 +932,9 @@
             this.unitActivityRptTab.ResumeLayout(false);
             this.unitActivityPanel.ResumeLayout(false);
             this.unitActivityPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.reportTab.ResumeLayout(false);
+            this.reportPanel.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.userSettingsBindingSource)).EndInit();
@@ -876,7 +950,6 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem configureServersToolStripMenuItem;
-        private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage homeTabPage;
         private System.Windows.Forms.TabPage selectReportTabPage;
         private System.Windows.Forms.TextBox passwordTextBox;
@@ -912,7 +985,7 @@
         private System.Windows.Forms.TableLayoutPanel unitActivityPanel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label unitActivityLabel;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button reportNextButton;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label7;
@@ -928,6 +1001,12 @@
         private System.Windows.Forms.ListBox facilityListBox;
         private System.Windows.Forms.Button selectFacilityNextBtn;
         private System.Windows.Forms.ComboBox facilityComboBox;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage reportTab;
+        private System.Windows.Forms.Panel reportPanel;
+        private Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
+        private System.Windows.Forms.Button confirmFacilityButton;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

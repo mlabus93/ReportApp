@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ReportAppTest.Reports
 {
-    class ExceptionReport
+    static class ExceptionReport
     {
-        DateTime PrintDateTime, StartDate, EndDate;
-        String Locations, StartTime, EndTime;
+        static DateTime PrintDateTime, StartDate, EndDate;
+        static String Locations, StartTime, EndTime;
         
     }
 }

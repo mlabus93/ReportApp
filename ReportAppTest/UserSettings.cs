@@ -62,6 +62,7 @@ namespace ReportAppTest
         }
 
         [UserScopedSetting()]
+        [DefaultSettingValue("false")]
         public Boolean SettingsFlag
         {
             get

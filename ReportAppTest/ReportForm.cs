@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ReportAppTest.Reports;
+using Microsoft.Reporting.WinForms;
 
 namespace ReportAppTest
 {
@@ -16,6 +18,12 @@ namespace ReportAppTest
         UserSettings us;
         Database db = new Database();
         static List<string> items;
+        int currentFacilityComboValue = -1;
+        public ListBox currentZoneListBox = new ListBox();
+        ListBox currentRoomListBox = new ListBox();
+        List<DataSet> dsList = new List<DataSet>();
+        List<string> selectedZItems = new List<string>();
+        List<string> selectedRItems = new List<string>();
 
         public ReportForm()
         {
@@ -33,9 +41,16 @@ namespace ReportAppTest
             SettingsForm settings = new SettingsForm();
             using (settings)
             {
+                Properties.Settings.Default.Reload();
                 settings.ShowDialog();
             }
-            this.tabControl1.SelectTab(0);
+            if (settings.DialogResult.Equals((DialogResult)1))
+            {
+                this.Size = new System.Drawing.Size(800, 600);
+                this.MaximumSize = new System.Drawing.Size(800, 600);
+                this.MinimumSize = new System.Drawing.Size(800, 600);
+                this.tabControl1.SelectTab(0);
+            }
         }
 
         private void ReportForm_Load(object sender, EventArgs e)
@@ -93,13 +108,14 @@ namespace ReportAppTest
         private void PopulateFacilityListBox()
         {
             items = new List<string>();
-            String server;
-            foreach (string name in us.ServerName)
+            String facility;
+            foreach (string name in Properties.Settings.Default.Facilities)
             {
-                if (name != null)
+                if (name != "Enter Server Name")
                 {
-                    server = name.ToUpper();
-                    items.Add(server);
+                    facility = name.ToUpper();
+                    items.Add(facility);
+                    //OpenSqlConn(server);
                 }
             }
             facilityListBox.DataSource = items;
@@ -107,8 +123,28 @@ namespace ReportAppTest
 
         private void StoreSelectedFacilities()
         {
+            List<String> facilities = new List<string>();
+            //String strItem;
+            //DataTable data = new DataTable();
+            //data.Columns.Add("Facilities");
+            //foreach (var name in facilityListBox.SelectedItems)
+            {
+                //data.Rows.Add(name.ToString());
+            }
+
+            for (int i = 0; i < facilityListBox.Items.Count; i++)
+            {
+                if (facilityListBox.GetSelected(i))
+                {
+                    facilities.Add(facilityListBox.Text);
+                }
+            }
+
+                //facilityComboBox.DisplayMember = facilityListBox.SelectedItems.ToString();
             facilityComboBox.DataSource = null;
+            //facilityComboBox.DataSource = Properties.Settings.Default.Facilities;
             facilityComboBox.DataSource = facilityListBox.SelectedItems;
+                //facilityComboBox.DisplayMember = "Facilities";
             facilityComboBox.SelectedIndex = 0;
         }
 
@@ -119,34 +155,241 @@ namespace ReportAppTest
 
         private void selectFacilityNextBtn_Click(object sender, EventArgs e)
         {
-            StoreSelectedFacilities();
-            this.tabControl1.SelectTab(4);
+            if (facilityListBox.SelectedItems.Count > 0)
+            {
+                StoreSelectedFacilities();
+                OpenSqlConn();
+                facilityComboBox.SelectedIndex = 0;
+                this.tabControl1.SelectTab(4);
+            }
+            else
+            {
+                MessageBox.Show("Please select a facility to run a report.", "No Facility Selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-        private void OpenSqlConn(String serverName)
+        private void OpenSqlConn()
         {
-            DataSet ds = new DataSet();
-            String connStr = "Data Source=" + serverName + ";Initial Catalog=" + us.Database + ";User ID=" 
-                + userIDTextBox.Text + ";Password=" + passwordTextBox.Text;
-            using(SqlConnection conn = new SqlConnection(connStr))
+            dsList.Clear();
+            int serverIndex = -1;
+            int i = 0;
+            foreach (var selectedFacility in facilityListBox.Items)
             {
-                SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("select * from dbo.DimZone", conn);
-                SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("select * from dbo.DimLocation", conn);
-                dimZoneAdapter.Fill(ds, "dbo.DimZone");
-                dimLocationAdapter.Fill(ds, "dbo.DimLocation");
-                zoneListBox.DisplayMember = "Zone_Name";
-                zoneListBox.ValueMember = "Zone_ID";
-                zoneListBox.DataSource = ds.Tables["dbo.DimZone"];
-                roomListBox.DisplayMember = "Room_Name";
-                roomListBox.ValueMember = "Room_ID";
-                roomListBox.DataSource = ds.Tables["dbo.dimLocation"];
+                serverIndex++;
+                if (facilityListBox.GetSelected(serverIndex))
+                {
+                    dsList.Add(new DataSet(selectedFacility.ToString()));
+                    /*foreach (String facility in facilityListBox.Items)
+                    {
+
+                    }
+                
+                    foreach (String facilityName in Properties.Settings.Default.Facilities)
+                    {
+                        //serverIndex = facilityComboBox.Items.IndexOf(facility);
+                        if (facilityName.Equals(facility, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            //serverIndex = Properties.Settings.Default.Facilities.IndexOf(facilityName);
+                            serverIndex++;
+                            dsList.Add(new DataSet(facility));
+                            break;
+                        }
+                    }*/
+
+                    String connStr = "Data Source=" + Properties.Settings.Default.Servers[serverIndex] + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID="
+                        + userIDTextBox.Text + ";Password=" + passwordTextBox.Text;
+                    using (SqlConnection conn = new SqlConnection(connStr))
+                    {
+                        SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("select distinct Zone_Name, Zone_ID from dbo.DimZone", conn);
+                        SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("select distinct Room_Name, Room_ID from dbo.DimLocation", conn);
+                        //SqlDataAdapter dimFacilityAdapter = new SqlDataAdapter("select * from dbo.DimFacility where Facility_ID=1", conn);
+                        //dimFacilityAdapter.Fill(ds, "dbo.DimFacility");
+                        //facilityListBox.DisplayMember = "Facility_Name";
+                        //facilityListBox.ValueMember = "Facility_ID";
+                        //facilityListBox.DataSource = ds.Tables["dbo.DimFacility"];
+                        dimZoneAdapter.Fill(dsList[i], "dbo.DimZone");
+                        dimLocationAdapter.Fill(dsList[i], "dbo.DimLocation");
+                        /*zoneListBox.DisplayMember = "Zone_Name";
+                        zoneListBox.ValueMember = "Zone_ID";
+                        zoneListBox.DataSource = dsList[i].Tables["dbo.DimZone"];
+                        roomListBox.DisplayMember = "Room_Name";
+                        roomListBox.ValueMember = "Room_ID";
+                        roomListBox.DataSource = dsList[i].Tables["dbo.DimLocation"];*/
+                    }
+                    i++;
+                }
             }
+            if (facilityComboBox.Items.Count > 1)
+                facilityComboBox.SelectedIndex = 1;
+            else
+                facilityComboBox_SelectedIndexChanged(facilityComboBox, new EventArgs());
+        }
+
+        private void StoreZoneRoomComboBoxes()
+        {
+
         }
 
         private void facilityComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (facilityComboBox.SelectedValue != null)
-                OpenSqlConn((String)facilityComboBox.SelectedValue);
+            {
+                //int index = 0;
+                /*foreach (string facility in Properties.Settings.Default.Facilities)
+                {
+                    if (facility.Equals(facilityComboBox.SelectedValue.ToString(), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        index = Properties.Settings.Default.Facilities.IndexOf(facility);
+                    }
+                }*/
+                //DataSet set = dsList.Find(item => item.DataSetName.Equals(Properties.Settings.Default.Servers[index], StringComparison.InvariantCultureIgnoreCase));
+                DataSet set = null;
+                if (dsList.Count != 0)
+                    set = dsList[facilityComboBox.SelectedIndex];
+                if (set != null)
+                {
+                    zoneListBox.DisplayMember = "Zone_Name";
+                    zoneListBox.ValueMember = "Zone_ID";
+                    zoneListBox.DataSource = set.Tables["dbo.DimZone"];
+                    roomListBox.DisplayMember = "Room_Name";
+                    roomListBox.ValueMember = "Room_ID";
+                    roomListBox.DataSource = set.Tables["dbo.DimLocation"];
+                }
+                //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
+                //OpenSqlConn(server);
+                foreach (string facilityName in Properties.Settings.Default.Facilities)
+                {
+                    if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
+                        UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
+                }
+
+                int i = 0;
+                if (selectedZItems != null && selectedRItems != null)
+                {
+                    for (i = 0; i < zoneListBox.Items.Count; i++)
+                    {
+                        for (int j = 0; j < selectedZItems.Count; j++)
+                        {
+                            if (selectedZItems[j].Equals(zoneListBox.GetItemText(zoneListBox.Items[i])))
+                            {
+                                zoneListBox.SetSelected(i, true);
+                            }
+                        }
+                    }
+                    for (i = 0; i < roomListBox.Items.Count; i++)
+                    {
+                        for (int j = 0; j < selectedRItems.Count; j++)
+                        {
+                            if (selectedRItems[j].Equals(roomListBox.GetItemText(roomListBox.Items[i])))
+                            {
+                                this.roomListBox.SetSelected(i, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (currentFacilityComboValue != facilityComboBox.SelectedIndex)
+            {
+                ResetFacilitySaveButton();
+            }
         }
+
+        private void ResetFacilitySaveButton()
+        {
+            this.pictureBox1.Image = null;
+            this.confirmFacilityButton.Text = "Confirm Facility Settings";
+            this.confirmFacilityButton.Enabled = true;
+            this.currentFacilityComboValue = facilityComboBox.SelectedIndex;
+        }
+
+        private void reportNextButton_Click(object sender, EventArgs e)
+        {
+            UnitActivityReport.SetLocations(zoneListBox, roomListBox,  facilityComboBox.SelectedItem.ToString());
+            /*this.reportViewer1.ServerReport.ReportServerUrl = new System.Uri(Properties.Settings.Default.URI);
+            ReportParameter param = new ReportParameter("Locations", UnitActivityReport.locations[0]);*/
+            UnitActivityReport.startDate = startDatePicker.Value;
+            UnitActivityReport.endDate = endDatePicker.Value;
+            /*var startDate = new ReportParameter("StartDate", UnitActivityReport.startDate.ToString("MM/dd/yyyy"));
+            var endDate = new ReportParameter("EndDate", UnitActivityReport.endDate.ToString("MM/dd/yyyy"));
+            this.reportViewer1.ServerReport.SetParameters(param);
+            this.reportViewer1.ServerReport.SetParameters(startDate);
+            this.reportViewer1.ServerReport.SetParameters(endDate);
+            string val = null;
+            this.reportViewer1.ServerReport.SetParameters(new ReportParameter("CallTypeIds", val));
+            string value = "true";
+            this.reportViewer1.ServerReport.SetParameters(new ReportParameter("ShowBlankRecords", value));
+            this.reportViewer1.ServerReport.SetParameters(new ReportParameter("PrintedBy", "GUY"));
+            this.reportViewer1.ShowParameterPrompts = false;
+            this.tabControl1.SelectTab(5);
+            this.MaximumSize = new System.Drawing.Size(0, 0);
+            //this.Size = new System.Drawing.Size(825, 850);
+            this.WindowState = FormWindowState.Maximized;*/
+            ReportViewerForm reportViewer = new ReportViewerForm();
+            using (reportViewer)
+            {
+                reportViewer.ShowDialog();
+            }
+            //this.reportViewer1.RefreshReport();
+        }
+
+        private void confirmFacilityButton_Click(object sender, EventArgs e)
+        {
+            if (facilityComboBox.SelectedValue != null)
+            {
+                /*var zoneItems = new ListBox.SelectedObjectCollection(zoneListBox);
+                var roomItems = new ListBox.SelectedObjectCollection(roomListBox);
+                selectedZoneItems = zoneItems;
+                selectedRoomItems = roomItems;*/
+                for (int i = 0; i < zoneListBox.SelectedItems.Count; i++)
+                {
+                    selectedZItems.Add(zoneListBox.GetItemText(zoneListBox.SelectedItems[i]));
+                }
+                for (int j = 0; j < roomListBox.SelectedItems.Count; j++)
+                {
+                    selectedRItems.Add(roomListBox.GetItemText(roomListBox.SelectedItems[j]));
+                }
+
+                //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
+                //OpenSqlConn(server);
+                foreach (string facilityName in Properties.Settings.Default.Facilities)
+                {
+                    if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
+                        UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
+                }
+
+                this.confirmFacilityButton.Text = "Facility " + facilityComboBox.SelectedItem.ToString() + " Saved";
+                this.confirmFacilityButton.Enabled = false;
+                this.pictureBox1.Image = Properties.Resources.checkmark;
+                
+                /*int i = 0;
+                for (i = 0; i < zoneListBox.Items.Count; i++ )
+                {
+                    if (selectedZoneItems.Contains(zoneListBox.Items[i]))
+                    {
+                        zoneListBox.SetSelected(i, true);
+                    }
+                }
+                    foreach (object item in zoneListBox.Items)
+                    {
+                        if (selectedZoneItems.Contains(item))
+                        {
+                            this.zoneListBox.SetSelected(i, true);
+                        }
+                        i++;
+                    }*/
+            }
+        }
+
+        private void zoneListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ResetFacilitySaveButton();
+        }
+
+        private void roomListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ResetFacilitySaveButton();
+        }
+
     }
 }

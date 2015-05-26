@@ -15,6 +15,7 @@ namespace ReportAppTest
         static UserSettings uSettings = new UserSettings();
         static SqlConnection sqlTest = new SqlConnection();
         SqlConnection conn = new SqlConnection();
+        String[] facilities = new String[10];
 
         public Database()
         {
@@ -49,14 +50,14 @@ namespace ReportAppTest
                 return;
             }
             //store SQL connections in list
-            
-            for (int i=0; i<uSettings.ServerCount; i++)
+            Properties.Settings.Default.Facilities.Clear();
+            for (int i=0; i<Properties.Settings.Default.ServerCount; i++)
             {
-                conn = (CreateSqlConnection(ID, pass, uSettings.ServerName[i], uSettings.Database));
+                conn = (CreateSqlConnection(ID, pass, Properties.Settings.Default.Servers[i], Properties.Settings.Default.Database));
                 if (TestConnection(i))
                     sqlConns.Add(conn);
             }
-            if (sqlConns.Count == uSettings.ServerCount)
+            if (sqlConns.Count == Properties.Settings.Default.ServerCount)
                 this.CONNECTION_SUCCESS = true;
         }
 
@@ -67,7 +68,19 @@ namespace ReportAppTest
                 using (sqlTest = conn)
                 {
                     sqlTest.Open();
+                    using(SqlCommand cmd = new SqlCommand("SELECT * FROM dbo.DimFacility WHERE Facility_ID=1", sqlTest))
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader != null)
+                            {
+                                while (reader.Read())
+                                    Properties.Settings.Default.Facilities.Insert(index, reader["Facility_Name"].ToString());
+                            }
+                        }
+                    }
                 }
+                Properties.Settings.Default.Save();
                 return true;
             }
             catch (SqlException)
@@ -82,7 +95,9 @@ namespace ReportAppTest
 
         public void RemoveConnections()
         {
-                sqlConns.RemoveRange(0, sqlConns.Count);
+            sqlConns.RemoveRange(0, sqlConns.Count);
+            for (int i = 0; i < sqlConns.Count; i++)
+            { }
         }
 
         public void ExecuteQueries(int index)

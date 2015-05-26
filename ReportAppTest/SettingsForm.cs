@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ReportAppTest.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,11 +16,7 @@ namespace ReportAppTest
         public const int MAX_SERVER_COUNT = 10;
 
         //2d array for server labels and textboxes
-        Object[,] servers = new Object[15,2];
-
-        
-        static UserSettings us = new UserSettings();
-
+        Object[,] servers = new Object[10,2];
 
         public SettingsForm()
         {
@@ -49,7 +46,8 @@ namespace ReportAppTest
             this.AddToServerArray(serverName9Label, 8);
             this.AddToServerArray(serverName10Label, 9);
 
-            us.Reload();
+            this.DialogResult = 0;
+
 
         }
 
@@ -86,6 +84,10 @@ namespace ReportAppTest
             {
                 serverTextBox.Text = "Enter Server Name";
                 serverTextBox.ForeColor = SystemColors.InactiveCaptionText;
+            }
+            else
+            {
+                Properties.Settings.Default.Servers[serverTextBox.TabIndex - 1] = serverTextBox.Text;
             }
         }
 
@@ -124,9 +126,25 @@ namespace ReportAppTest
             for (int i=1; i<count; i++)
             {
                 Label currentLabel = (Label)servers[i, 1];
-                TextBox currentTextBox = (TextBox)servers[i, 0];
+                TextBox currentTextBox = (TextBox)servers[i,0];
+                if (i < Properties.Settings.Default.ServerCount)
+                    currentTextBox.Text = Properties.Settings.Default.Servers[i];
+                else
+                    currentTextBox.Text = "Enter Server Name";
+                if (currentTextBox.Text == "Enter Server Name")
+                {
+                    currentTextBox.Text = "Enter Server Name";
+                    currentTextBox.ForeColor = SystemColors.InactiveCaptionText;
+                }
                 currentLabel.Visible = true;
                 currentTextBox.Visible = true;
+            }
+            for (int j=(int)count; j<MAX_SERVER_COUNT; j++)
+            {
+                Label label = (Label)servers[j, 1];
+                TextBox textBox = (TextBox)servers[j, 0];
+                textBox.Text = "Enter Server Name";
+                //Properties.Settings.Default.Servers[j] = "Enter Server Name";
             }
         }
         
@@ -137,6 +155,7 @@ namespace ReportAppTest
             {
                 Label currentLabel = (Label)servers[i, 1];
                 TextBox currentTextBox = (TextBox)servers[i, 0];
+                currentTextBox.Text = "Enter Server Name";
                 currentLabel.Visible = false;
                 currentTextBox.Visible = false;
             }
@@ -145,6 +164,7 @@ namespace ReportAppTest
         //Cancel settings and close form
         private void cancelSettingsButton_Click(object sender, EventArgs e)
         {
+            //Properties.Settings.Default.Reload();
             this.Close();
         }
 
@@ -174,11 +194,14 @@ namespace ReportAppTest
                     return;
                 }
             }
+            Properties.Settings.Default.Servers.Clear();
             for (int i=0; i<serverCounter.Value; i++)
             {
                 currentTextBox = (TextBox)servers[i, 0];
-                us.ServerName[i] = currentTextBox.Text;
-                currentTextBox.DataBindings.Add("Text", us, "ServerName");
+                Properties.Settings.Default.Servers.Remove("null");
+                Properties.Settings.Default.Servers.Insert(i, currentTextBox.Text);
+                //us.ServerName[i] = currentTextBox.Text;
+                currentTextBox.DataBindings.Add("Text", Properties.Settings.Default, "Servers");
 
                 if (currentTextBox.Text.Equals("Enter Server Name"))
                     MessageBox.Show("Enter All Server Names");
@@ -187,48 +210,72 @@ namespace ReportAppTest
             for (int j = (int)serverCounter.Value; j < MAX_SERVER_COUNT; j++ )
             {
                 currentTextBox = (TextBox)servers[j, 0];
-                us.ServerName[j] = (String)us.Properties["ServerName"].DefaultValue;
-                currentTextBox.DataBindings.Add("Text", us, "ServerName");
+                Properties.Settings.Default.Servers.Insert(j, currentTextBox.Text);
+                //us.ServerName[j] = (String)us.Properties["ServerName"].DefaultValue;
+                //currentTextBox.DataBindings.Add("Text", us, "ServerName");
 
             }
            
-            us.ServerCount = (int)serverCounter.Value;
+            /*us.ServerCount = (int)serverCounter.Value;
             us.Database = (String)databaseTextBox.Text;
-            us.SettingsFlag = true;
+            us.SettingsFlag = true;*/
+
+            Properties.Settings.Default.ServerCount = (int)serverCounter.Value;
+            Properties.Settings.Default.Database = (String)databaseTextBox.Text;
+            Properties.Settings.Default.Flag = true;
             
-            us.Save();
+            Properties.Settings.Default.Save();
+            this.DialogResult = (DialogResult)1;
+            //us.Save();
             this.Close();
         }
 
         private void SettingsForm_Load(object sender, EventArgs e)
         {
-           if (!us.SettingsFlag)
-           {
-               //do nothing
-           }
-            
-            else if (us.SettingsFlag)
-            {
-                TextBox currentTextBox;
-                us.Reload();
-                serverCounter.Value = us.ServerCount;
-                databaseTextBox.Text = us.Database;
-                if (databaseTextBox.Text != "Enter Database Name")
-                    databaseTextBox.ForeColor = DefaultForeColor;
+            bool flag = Properties.Settings.Default.Flag;
 
-                for (int i=0; i<serverCounter.Value; i++)
-                {
-                    currentTextBox = (TextBox)servers[i, 0];
-                    currentTextBox.Text = us.ServerName[i];
-                    currentTextBox.ForeColor = DefaultForeColor;
-                }
-                for (int j = (int)serverCounter.Value; j < MAX_SERVER_COUNT; j++)
-                {
-                    currentTextBox = (TextBox)servers[j, 0];
-                    currentTextBox.Text = "Enter Server Name";
-                    currentTextBox.ForeColor = SystemColors.InactiveCaptionText;
-                }
+            for (int k = 0; k < Properties.Settings.Default.ServerCount; k++ )
+            {
+                TextBox current = (TextBox)servers[k, 0];
+                current.Text = Properties.Settings.Default.Servers[k].ToString();
+                servers[k, 0] = current;
             }
+            for (int k = Properties.Settings.Default.ServerCount; k < MAX_SERVER_COUNT; k++)
+            {
+                TextBox current = (TextBox)servers[k, 0];
+                current.Text = "Enter Server Name";
+            }
+
+                if (!flag)
+                {
+                    //do nothing
+                }
+
+                else if (flag)
+                {
+                    TextBox currentTextBox;
+                    serverCounter.Value = Properties.Settings.Default.ServerCount;
+                    databaseTextBox.Text = Properties.Settings.Default.Database;
+                    //us.Reload();
+                    //serverCounter.Value = us.ServerCount;
+                    //databaseTextBox.Text = us.Database;
+                    if (databaseTextBox.Text != "Enter Database Name")
+                        databaseTextBox.ForeColor = DefaultForeColor;
+
+                    for (int i = 0; i < serverCounter.Value; i++)
+                    {
+                        currentTextBox = (TextBox)servers[i, 0];
+                        //currentTextBox.Text = us.ServerName[i];
+                        currentTextBox.Text = Properties.Settings.Default.Servers[i].ToString();
+                        currentTextBox.ForeColor = DefaultForeColor;
+                    }
+                    for (int j = (int)serverCounter.Value; j < MAX_SERVER_COUNT; j++)
+                    {
+                        currentTextBox = (TextBox)servers[j, 0];
+                        currentTextBox.Text = "Enter Server Name";
+                        currentTextBox.ForeColor = SystemColors.InactiveCaptionText;
+                    }
+                }
         }
     }
 }
