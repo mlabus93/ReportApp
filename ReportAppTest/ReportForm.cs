@@ -22,12 +22,21 @@ namespace ReportAppTest
         public ListBox currentZoneListBox = new ListBox();
         ListBox currentRoomListBox = new ListBox();
         List<DataSet> dsList = new List<DataSet>();
-        List<string> selectedZItems = new List<string>();
-        List<string> selectedRItems = new List<string>();
+        List<string>[] selectedZItems = new List<string>[15];
+        List<string>[] selectedRItems = new List<string>[15];
 
         public ReportForm()
         {
             InitializeComponent();
+        }
+
+        private void InitializeSelectedItems()
+        {
+            for (int i=0; i < 15; i++)
+            {
+                selectedZItems[i] = new List<string>();
+                selectedRItems[i] = new List<string>();
+            }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -56,6 +65,7 @@ namespace ReportAppTest
         private void ReportForm_Load(object sender, EventArgs e)
         {
             //db = new Database();
+            InitializeSelectedItems();
             us = new UserSettings();
             us.Reload();
         }
@@ -268,9 +278,9 @@ namespace ReportAppTest
                 {
                     for (i = 0; i < zoneListBox.Items.Count; i++)
                     {
-                        for (int j = 0; j < selectedZItems.Count; j++)
+                        for (int j = 0; j < selectedZItems[facilityComboBox.SelectedIndex].Count; j++)
                         {
-                            if (selectedZItems[j].Equals(zoneListBox.GetItemText(zoneListBox.Items[i])))
+                            if (selectedZItems[facilityComboBox.SelectedIndex][j].Equals(zoneListBox.GetItemText(zoneListBox.Items[i])))
                             {
                                 zoneListBox.SetSelected(i, true);
                             }
@@ -278,9 +288,9 @@ namespace ReportAppTest
                     }
                     for (i = 0; i < roomListBox.Items.Count; i++)
                     {
-                        for (int j = 0; j < selectedRItems.Count; j++)
+                        for (int j = 0; j < selectedRItems[facilityComboBox.SelectedIndex].Count; j++)
                         {
-                            if (selectedRItems[j].Equals(roomListBox.GetItemText(roomListBox.Items[i])))
+                            if (selectedRItems[facilityComboBox.SelectedIndex][j].Equals(roomListBox.GetItemText(roomListBox.Items[i])))
                             {
                                 this.roomListBox.SetSelected(i, true);
                             }
@@ -337,47 +347,39 @@ namespace ReportAppTest
         {
             if (facilityComboBox.SelectedValue != null)
             {
-                /*var zoneItems = new ListBox.SelectedObjectCollection(zoneListBox);
-                var roomItems = new ListBox.SelectedObjectCollection(roomListBox);
-                selectedZoneItems = zoneItems;
-                selectedRoomItems = roomItems;*/
-                for (int i = 0; i < zoneListBox.SelectedItems.Count; i++)
+                if (zoneListBox.SelectedItems.Count != 0 && roomListBox.SelectedItems.Count != 0)
                 {
-                    selectedZItems.Add(zoneListBox.GetItemText(zoneListBox.SelectedItems[i]));
-                }
-                for (int j = 0; j < roomListBox.SelectedItems.Count; j++)
-                {
-                    selectedRItems.Add(roomListBox.GetItemText(roomListBox.SelectedItems[j]));
-                }
-
-                //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
-                //OpenSqlConn(server);
-                foreach (string facilityName in Properties.Settings.Default.Facilities)
-                {
-                    if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
-                        UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
-                }
-
-                this.confirmFacilityButton.Text = "Facility " + facilityComboBox.SelectedItem.ToString() + " Saved";
-                this.confirmFacilityButton.Enabled = false;
-                this.pictureBox1.Image = Properties.Resources.checkmark;
-                
-                /*int i = 0;
-                for (i = 0; i < zoneListBox.Items.Count; i++ )
-                {
-                    if (selectedZoneItems.Contains(zoneListBox.Items[i]))
+                    selectedZItems[facilityComboBox.SelectedIndex].Clear();
+                    selectedRItems[facilityComboBox.SelectedIndex].Clear();
+                    /*var zoneItems = new ListBox.SelectedObjectCollection(zoneListBox);
+                    var roomItems = new ListBox.SelectedObjectCollection(roomListBox);
+                    selectedZoneItems = zoneItems;
+                    selectedRoomItems = roomItems;*/
+                    for (int i = 0; i < zoneListBox.SelectedItems.Count; i++)
                     {
-                        zoneListBox.SetSelected(i, true);
+                        selectedZItems[facilityComboBox.SelectedIndex].Add(zoneListBox.GetItemText(zoneListBox.SelectedItems[i]));
                     }
-                }
-                    foreach (object item in zoneListBox.Items)
+                    for (int j = 0; j < roomListBox.SelectedItems.Count; j++)
                     {
-                        if (selectedZoneItems.Contains(item))
-                        {
-                            this.zoneListBox.SetSelected(i, true);
-                        }
-                        i++;
-                    }*/
+                        selectedRItems[facilityComboBox.SelectedIndex].Add(roomListBox.GetItemText(roomListBox.SelectedItems[j]));
+                    }
+
+                    //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
+                    //OpenSqlConn(server);
+                    foreach (string facilityName in Properties.Settings.Default.Facilities)
+                    {
+                        if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
+                            UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
+                    }
+
+                    this.confirmFacilityButton.Text = "Facility " + facilityComboBox.SelectedItem.ToString() + " Saved";
+                    this.confirmFacilityButton.Enabled = false;
+                    this.pictureBox1.Image = Properties.Resources.checkmark;
+                }
+                else
+                {
+                    MessageBox.Show("Please select at least one zone and one room.", "No Selection Made", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
