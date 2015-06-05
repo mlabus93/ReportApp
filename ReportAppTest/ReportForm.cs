@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ReportAppTest.Reports;
+using ReportAppTest.Tables;
+using ReportAppTest.Tables.Collections;
 using Microsoft.Reporting.WinForms;
 
 namespace ReportAppTest
@@ -24,6 +26,70 @@ namespace ReportAppTest
         List<DataSet> dsList = new List<DataSet>();
         List<string>[] selectedZItems = new List<string>[15];
         List<string>[] selectedRItems = new List<string>[15];
+
+        DataSet set;
+        DataSet servers = new DataSet();
+
+        DataTable dimZone = new DataTable();
+        DataTable dimLocation = new DataTable();
+        DataTable pr_UnitActivityReport = new DataTable();
+
+        List<DimZone> zoneCollection = new List<DimZone>();
+        List<DimLocation> locationsCollection = new List<DimLocation>();
+        LocationZone locationZone = new LocationZone();
+        LocationZoneCollection lzCollection = new LocationZoneCollection();
+
+        
+        private void SQLQueries()
+        {
+            foreach (var server in Properties.Settings.Default.Servers)
+            {
+                string connString = "Data Source=" + server + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID="
+                    + userIDTextBox.Text + ";Password=" + passwordTextBox.Text;
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    try
+                    {
+                        SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("SELECT * FROM dbo.DimZone", conn);
+                        SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("SELECT * FROM dbo.DimLocation", conn);
+                        SqlDataAdapter pr_UnitActivityReportAdapter = new SqlDataAdapter("dbo.prFactEvent_Get_UnitActivityReport", conn);
+                        
+                        pr_UnitActivityReportAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+
+                        dimZoneAdapter.Fill(dimZone);
+                        dimLocationAdapter.Fill(dimLocation);
+                        pr_UnitActivityReportAdapter.Fill(pr_UnitActivityReport);
+                    }
+                    catch (SqlException ex)
+                    {
+                        Console.WriteLine("Sql Error: " + ex.Message);
+                    }
+                }
+            }
+        }
+
+
+        private void AddRowsToCollection()
+        {
+
+        }
+
+
+        private void PopulateLocationZone()
+        {
+            foreach (var zone in zoneCollection)
+            {
+                locationZone.Zone_ID = zone.Zone_ID;
+                locationZone.Zone_Name = zone.Zone_Name;
+                lzCollection.AddLocationZone(locationZone);
+            }
+            foreach (var location in locationsCollection)
+            {
+                locationZone.Room_ID = location.Room_ID;
+                locationZone.Room_Name = location.Room_Name;
+                lzCollection.AddLocationZone(locationZone);
+            }
+        }
 
         public ReportForm()
         {
@@ -141,7 +207,7 @@ namespace ReportAppTest
             {
                 //data.Rows.Add(name.ToString());
             }
-
+            
             for (int i = 0; i < facilityListBox.Items.Count; i++)
             {
                 if (facilityListBox.GetSelected(i))
@@ -212,6 +278,31 @@ namespace ReportAppTest
                     {
                         SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("select distinct Zone_Name, Zone_ID from dbo.DimZone", conn);
                         SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("select distinct Room_Name, Room_ID from dbo.DimLocation", conn);
+                        SqlDataAdapter roomAdapter = new SqlDataAdapter("select Room_Name, Room_ID, min(Area_Name) from dbo.DimLocation group by Room_Name, Room_ID", conn);
+                        SqlDataAdapter UnitActivityAdapter = new SqlDataAdapter();
+                        UnitActivityAdapter.SelectCommand = new SqlCommand("dbo.prFactEvent_Get_UnitActivityReport", conn);
+                        UnitActivityAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StartDate", Convert.ToDateTime("4/24/2015"));
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@EndDate", Convert.ToDateTime("4/24/2015"));
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@Locations", "185, 261");
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StartTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@EndTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("FirstShiftStartTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@FirstShiftEndTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@SecondShiftStartTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@SecondShiftEndTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@ThirdShiftStartTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@ThirdShiftEndTime", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@CallTypeIds", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@IncludeMessages", 0);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@CombineUnits", 0);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StaffServiceLevels", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StaffRegistrationLevels", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StaffIds", System.DBNull.Value);
+                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@ShowBlankRecords", 0);
+
+                        UnitActivityAdapter.Fill(dsList[i], "UnitActivityTable");
                         //SqlDataAdapter dimFacilityAdapter = new SqlDataAdapter("select * from dbo.DimFacility where Facility_ID=1", conn);
                         //dimFacilityAdapter.Fill(ds, "dbo.DimFacility");
                         //facilityListBox.DisplayMember = "Facility_Name";
@@ -219,6 +310,8 @@ namespace ReportAppTest
                         //facilityListBox.DataSource = ds.Tables["dbo.DimFacility"];
                         dimZoneAdapter.Fill(dsList[i], "dbo.DimZone");
                         dimLocationAdapter.Fill(dsList[i], "dbo.DimLocation");
+                        roomAdapter.Fill(dsList[i], "roomTable");
+                        
                         /*zoneListBox.DisplayMember = "Zone_Name";
                         zoneListBox.ValueMember = "Zone_ID";
                         zoneListBox.DataSource = dsList[i].Tables["dbo.DimZone"];
@@ -242,6 +335,41 @@ namespace ReportAppTest
 
         private void facilityComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (facilityComboBox.DataSource != null)
+            {
+                //if (facilityComboBox.SelectedText.Equals("", StringComparison.InvariantCultureIgnoreCase))
+                string connString = "Data Source=" + Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex] + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID=r5_rpt;Password=rpt";
+                string sql = "dbo.pr_ReportFilter_CallType";
+
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    try
+                    {
+                        using (SqlDataAdapter da = new SqlDataAdapter())
+                        {
+                            da.SelectCommand = new SqlCommand(sql, conn);
+                            da.SelectCommand.CommandType = CommandType.StoredProcedure;
+                            da.SelectCommand.Parameters.AddWithValue("@Facility_ID_List", 1);
+
+                            DataSet ds = new DataSet();
+
+                            da.Fill(ds, "result");
+
+                            callTypeListBox.DataSource = ds.Tables["result"];
+                            callTypeListBox.DisplayMember = "call_type_desc";
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        Console.WriteLine("SQL Error: " + ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error: " + ex.Message);
+                    }
+                }
+            }
+
             if (facilityComboBox.SelectedValue != null)
             {
                 //int index = 0;
@@ -253,7 +381,7 @@ namespace ReportAppTest
                     }
                 }*/
                 //DataSet set = dsList.Find(item => item.DataSetName.Equals(Properties.Settings.Default.Servers[index], StringComparison.InvariantCultureIgnoreCase));
-                DataSet set = null;
+                set = null;
                 if (dsList.Count != 0)
                     set = dsList[facilityComboBox.SelectedIndex];
                 if (set != null)
@@ -261,9 +389,11 @@ namespace ReportAppTest
                     zoneListBox.DisplayMember = "Zone_Name";
                     zoneListBox.ValueMember = "Zone_ID";
                     zoneListBox.DataSource = set.Tables["dbo.DimZone"];
+                    roomListBox.DataSource = set.Tables["dbo.DimLocation"];
                     roomListBox.DisplayMember = "Room_Name";
                     roomListBox.ValueMember = "Room_ID";
-                    roomListBox.DataSource = set.Tables["dbo.DimLocation"];
+                    
+                    //roomListBox.DataSource = zoneListBox.SelectedItems;
                 }
                 //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
                 //OpenSqlConn(server);
@@ -366,11 +496,12 @@ namespace ReportAppTest
 
                     //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
                     //OpenSqlConn(server);
-                    foreach (string facilityName in Properties.Settings.Default.Facilities)
+                    UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
+                    /*foreach (string facilityName in Properties.Settings.Default.Facilities)
                     {
                         if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
                             UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
-                    }
+                    }*/
 
                     this.confirmFacilityButton.Text = "Facility " + facilityComboBox.SelectedItem.ToString() + " Saved";
                     this.confirmFacilityButton.Enabled = false;
@@ -386,6 +517,19 @@ namespace ReportAppTest
         private void zoneListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ResetFacilitySaveButton();
+
+            /*if (set != null && zoneListBox.SelectedItem != null)
+            {
+                if (zoneListBox.GetItemText(zoneListBox.SelectedItem) != "All")
+                {
+                    DataView tableFilter = new DataView(set.Tables["dbo.roomTable"]);
+                    tableFilter.RowFilter = "Column_1 = '" +zoneListBox.GetItemText(zoneListBox.SelectedItem) + "'";
+                    roomListBox.DisplayMember = "Room_Name";
+                    roomListBox.ValueMember = "Room_ID";
+                    roomListBox.DataSource = tableFilter;
+                    //roomListBox.DataSource = set.Tables["roomTable"].Select("Column1 = " + zoneListBox.GetItemText(zoneListBox.SelectedItem));
+                }
+            }*/
         }
 
         private void roomListBox_SelectedIndexChanged(object sender, EventArgs e)

@@ -87,7 +87,8 @@ namespace ReportAppTest
             }
             else
             {
-                Properties.Settings.Default.Servers[serverTextBox.TabIndex - 1] = serverTextBox.Text;
+                //if (serverTextBox.TabIndex-1 <= Properties.Settings.Default.ServerCount)
+                    //Properties.Settings.Default.Servers[serverTextBox.TabIndex - 1] = serverTextBox.Text;
             }
         }
 
@@ -129,8 +130,6 @@ namespace ReportAppTest
                 TextBox currentTextBox = (TextBox)servers[i,0];
                 if (i < Properties.Settings.Default.ServerCount)
                     currentTextBox.Text = Properties.Settings.Default.Servers[i];
-                else
-                    currentTextBox.Text = "Enter Server Name";
                 if (currentTextBox.Text == "Enter Server Name")
                 {
                     currentTextBox.Text = "Enter Server Name";
@@ -155,7 +154,14 @@ namespace ReportAppTest
             {
                 Label currentLabel = (Label)servers[i, 1];
                 TextBox currentTextBox = (TextBox)servers[i, 0];
-                currentTextBox.Text = "Enter Server Name";
+                if (currentTextBox.Text != "Enter Server Name")
+                {
+                    //do nothing
+                }
+                else
+                {
+                    currentTextBox.Text = "Enter Server Name";
+                }
                 currentLabel.Visible = false;
                 currentTextBox.Visible = false;
             }

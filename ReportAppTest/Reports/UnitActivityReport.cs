@@ -10,10 +10,56 @@ namespace ReportAppTest.Reports
 {
     public  static class UnitActivityReport
     {
+        public const int SERVERS_COUNT = 15;
         public static DateTime printDateTime, startDate, endDate;
         public static String startTime, endTime;
         public static String[,] locations = new String[500, 15];
+        public static List<String>[] location = new List<string>[15];
+        public static int currentFacilityIndex = -1;
 
+        public static void SetL(ListBox zones, ListBox rooms, string facility)
+        {
+            for (int i = 0; i < Properties.Settings.Default.Servers.Count; i++)
+            {
+                location[i] = new List<string>();
+                if (Properties.Settings.Default.Facilities[i].Equals(facility, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    currentFacilityIndex = i;
+                }
+            }
+            foreach (var zone in zones.SelectedItems)
+            {
+                location[currentFacilityIndex].Add(((DataRowView)zone).Row["Zone_ID"].ToString());
+            }
+            foreach (var roomSelected in rooms.SelectedItems)
+            {
+
+                String.Join(", ", location[currentFacilityIndex]);
+            }
+        }
+
+        private static void ConcatStrings(ListBox zones, ListBox rooms)
+        {
+            int state = 1;
+            switch (state)
+            {
+                case 1:
+                    foreach (var zone in zones.SelectedItems)
+                    {
+                        location[currentFacilityIndex].Add(((DataRowView)zone).Row["Zone_ID"].ToString());
+                    }
+                    state = 2;
+                    break;
+                case 2:
+                    foreach (var room in rooms.SelectedItems)
+                    {
+                        location[currentFacilityIndex].Add(((DataRowView)room).Row["Room_ID"].ToString());
+                        String.Join(", ", location[currentFacilityIndex]);
+                    }
+                    state = 1;
+                    break;
+            }
+        }
 
         public static void SetLocations( ListBox zones, ListBox rooms, string facility)
         {
@@ -44,6 +90,19 @@ namespace ReportAppTest.Reports
                 locations[i, facilityIndex] = locations[i, facilityIndex] + ", " + ((DataRowView)room).Row["Room_ID"].ToString() + ";";
                 i++;
             }
+        }
+
+        public static String CombineLocations(int serverIndex)
+        {
+            String parameter = "";
+            for (int i=0; i < 500; i++)
+            {
+                if (locations[i,serverIndex] != null)
+                {
+                    parameter = parameter + locations[i, serverIndex] + " ";
+                }
+            }
+            return parameter;
         }
     }
 }
