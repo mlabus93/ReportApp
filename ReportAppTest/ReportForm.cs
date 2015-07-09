@@ -17,99 +17,278 @@ namespace ReportAppTest
 {
     public partial class ReportForm : Form
     {
-        UserSettings us;
+        // Max number of servers
+        const int MAX_SERVER_COUNT = 10;
+
+        // Class to connect to each server in database
         Database db = new Database();
-        static List<string> items;
+
+        // List used to populate facility listbox
+        static List<string> facilityList;
+        
+        // flag for restting facility save button
         int currentFacilityComboValue = -1;
-        public ListBox currentZoneListBox = new ListBox();
-        ListBox currentRoomListBox = new ListBox();
-        List<DataSet> dsList = new List<DataSet>();
-        List<string>[] selectedZItems = new List<string>[15];
-        List<string>[] selectedRItems = new List<string>[15];
 
-        DataSet set;
-        DataSet servers = new DataSet();
-
+        // Data tables to read SQL data into
         DataTable dimZone = new DataTable();
         DataTable dimLocation = new DataTable();
         DataTable pr_UnitActivityReport = new DataTable();
 
-        List<DimZone> zoneCollection = new List<DimZone>();
-        List<DimLocation> locationsCollection = new List<DimLocation>();
-        LocationZone locationZone = new LocationZone();
-        LocationZoneCollection lzCollection = new LocationZoneCollection();
+        // Lists of class type for each row
+        List<DimZone>[] zoneCollection = new List<DimZone>[MAX_SERVER_COUNT];
+        List<DimLocation>[] locationsCollection = new List<DimLocation>[MAX_SERVER_COUNT];
 
-        
-        private void SQLQueries()
+        // Location and zone merged data type
+        LocationZone locationZone = new LocationZone();
+
+        // Location and zone class type list
+        LocationZoneCollection[] lzCollection = new LocationZoneCollection[MAX_SERVER_COUNT];
+
+        // Reports list
+        public List<UnitActivityReport> reports = new List<UnitActivityReport>();
+
+        // Stored Procedure Lists
+        List<UnitActivityProcedure>[] unitActivityProcedureCollection = new List<UnitActivityProcedure>[MAX_SERVER_COUNT];
+
+        int facilityIndex = -1;
+
+        // StringBuilder for first procedure call
+        public StringBuilder locationBuilder = new StringBuilder();
+
+        // StringBuilders for procedure parameters
+        StringBuilder locationParam = new StringBuilder();
+        StringBuilder callTypeParam = new StringBuilder();
+
+
+        // Constructor
+        public ReportForm()
         {
-            foreach (var server in Properties.Settings.Default.Servers)
+            InitializeComponent();
+        }
+        
+        // Retrieve Zone and Location Tables from specified server
+        private void SQLQueries(string server)
+        {
             {
-                string connString = "Data Source=" + server + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID="
-                    + userIDTextBox.Text + ";Password=" + passwordTextBox.Text;
-                using (SqlConnection conn = new SqlConnection(connString))
+                dimZone.Clear();
+                dimLocation.Clear();
+                string connect = "Data Source=" + server + ";Initial Catalog=RMDW;User ID=r5_rpt;Password=rpt";
+                using (SqlConnection conn = new SqlConnection(connect))
                 {
                     try
                     {
-                        SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("SELECT * FROM dbo.DimZone", conn);
-                        SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("SELECT * FROM dbo.DimLocation", conn);
-                        SqlDataAdapter pr_UnitActivityReportAdapter = new SqlDataAdapter("dbo.prFactEvent_Get_UnitActivityReport", conn);
+                        SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("SELECT * FROM dbo.DimZone WHERE Zone_Key > 0", conn);
+                        SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("SELECT * FROM dbo.DimLocation WHERE Location_Key > 0", conn);
                         
-                        pr_UnitActivityReportAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-
                         dimZoneAdapter.Fill(dimZone);
                         dimLocationAdapter.Fill(dimLocation);
-                        pr_UnitActivityReportAdapter.Fill(pr_UnitActivityReport);
                     }
                     catch (SqlException ex)
                     {
                         Console.WriteLine("Sql Error: " + ex.Message);
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error: " + ex.Message);
+                    }
                 }
             }
         }
 
-
-        private void AddRowsToCollection()
+        // Populate collections from DataTable objects
+        private void AddRowsToCollection(int index)
         {
-
-        }
-
-
-        private void PopulateLocationZone()
-        {
-            foreach (var zone in zoneCollection)
+            // Loop through zone data table to add rows to custom zone collection
+            foreach (DataRow row in dimZone.Rows)
             {
-                locationZone.Zone_ID = zone.Zone_ID;
-                locationZone.Zone_Name = zone.Zone_Name;
-                lzCollection.AddLocationZone(locationZone);
+                DimZone zoneRow = new DimZone();
+                zoneRow.Zone_Key = row.Field<int>("Zone_Key");
+                zoneRow.Zone_ID = row.Field<int>("Zone_ID");
+                zoneRow.Facility_Key = row.Field<int>("Facility_Key");
+                zoneRow.Zone_Name = row.Field<string>("Zone_Name");
+                zoneRow.Zone_Type = row.Field<string>("Zone_Type");
+                zoneCollection[index].Add(zoneRow);
             }
-            foreach (var location in locationsCollection)
+            // Loop through location data table to add rows to custom location collection
+            foreach (DataRow row in dimLocation.Rows)
             {
-                locationZone.Room_ID = location.Room_ID;
-                locationZone.Room_Name = location.Room_Name;
-                lzCollection.AddLocationZone(locationZone);
-            }
-        }
-
-        public ReportForm()
-        {
-            InitializeComponent();
-        }
-
-        private void InitializeSelectedItems()
-        {
-            for (int i=0; i < 15; i++)
-            {
-                selectedZItems[i] = new List<string>();
-                selectedRItems[i] = new List<string>();
+                DimLocation locationRow = new DimLocation();
+                locationRow.Location_Key = row.Field<int>("Location_Key");
+                locationRow.Location_ID = row.Field<int>("Location_ID");
+                locationRow.Location_Type = row.Field<string>("Location_Type");
+                locationRow.Facility_Key = row.Field<int>("Facility_Key");
+                locationRow.Area_ID = row.Field<int>("Area_ID");
+                locationRow.Area_Name = row.Field<string>("Area_Name");
+                locationRow.Room_ID = row.Field<int>("Room_ID");
+                locationRow.Room_Name = row.Field<string>("Room_Name");
+                locationRow.Bed_ID = row.Field<int>("Bed_ID");
+                locationRow.Bed_Name = row.Field<string>("Bed_Name");
+                locationsCollection[index].Add(locationRow);
             }
         }
 
+        // Merge and Populate location and zone collections into one collection
+        private void MergeTables(int index)
+        {
+            foreach (var location in locationsCollection[index])
+            {
+                foreach (var zone in zoneCollection[index])
+                {
+                    if (location.Area_Name.Equals(zone.Zone_Name, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        LocationZone locationZone = new LocationZone();
+                        locationZone.Zone_ID = zone.Zone_ID;
+                        locationZone.Zone_Name = zone.Zone_Name;
+                        locationZone.Area_ID = location.Area_ID;
+                        locationZone.Area_Name = location.Area_Name;
+                        locationZone.Room_ID = location.Room_ID;
+                        locationZone.Room_Name = location.Room_Name;
+                        lzCollection[index].AddLocationZone(locationZone);
+                    }
+                }
+            }
+        }
+
+        // Create location paramter string for initial SQL stored procedure call
+        private string CreateZoneLocationString(int serverIndex)
+        {
+            // Format for location param is : "ZoneID,RoomID;"
+            foreach (var zone in zoneCollection[serverIndex])
+            {
+                foreach (var location in locationsCollection[serverIndex])
+                {
+                    locationBuilder.Append(zone.Zone_ID);
+                    locationBuilder.Append(",");
+                    locationBuilder.Append(location.Room_ID);
+                    locationBuilder.Append(";");
+                }
+            }
+            return locationBuilder.ToString();
+        }
+
+        // Run initial UnitActivity Stored Procedure for selected dates on specified server
+        private void GetUnitActivityTable(int serverIndex, string server, DateTime startDate, DateTime endDate)
+        {
+            string connString = "Data Source=" + server + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID=r5_rpt;Password=rpt";
+            string sql = "dbo.prFactEvent_Get_UnitActivityReport";
+
+            // Call function to get location parameter string
+            string locationParam = CreateZoneLocationString(serverIndex);
+
+            // Run Unit Activity procedure
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                try
+                {
+                    using (SqlDataAdapter da = new SqlDataAdapter())
+                    {
+                        da.SelectCommand = new SqlCommand(sql, conn);
+                        da.SelectCommand.CommandType = CommandType.StoredProcedure;
+                        da.SelectCommand.Parameters.AddWithValue("@StartDate", startDate);
+                        da.SelectCommand.Parameters.AddWithValue("@EndDate", endDate);
+                        da.SelectCommand.Parameters.AddWithValue("@Locations", locationParam);
+                        da.SelectCommand.Parameters.AddWithValue("@StartTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@EndTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("FirstShiftStartTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@FirstShiftEndTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@SecondShiftStartTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@SecondShiftEndTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@ThirdShiftStartTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@ThirdShiftEndTime", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@CallTypeIds", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@IncludeMessages", 0);
+                        da.SelectCommand.Parameters.AddWithValue("@CombineUnits", 0);
+                        da.SelectCommand.Parameters.AddWithValue("@StaffServiceLevels", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@StaffRegistrationLevels", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@StaffIds", System.DBNull.Value);
+                        da.SelectCommand.Parameters.AddWithValue("@ShowBlankRecords", 1);
+
+                        DataTable dt = new DataTable();
+
+                        da.Fill(dt);
+
+                        // Populate collection from Unit Activity Procedure table
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            UnitActivityProcedure unitActivityProcedure = new UnitActivityProcedure();
+                            unitActivityProcedure.Account_Id = row.Field<int?>("Account_Id");
+                            unitActivityProcedure.Activity_Type_Desc = row.Field<string>("Activity_Type_Desc");
+                            unitActivityProcedure.Area_Id = row.Field<int?>("Area_Id");
+                            unitActivityProcedure.Area_Name = row.Field<string>("Area_Name");
+                            unitActivityProcedure.Bed_Id = row.Field<int?>("Bed_Id");
+                            unitActivityProcedure.Bed_Name = row.Field<string>("Bed_Name");
+                            unitActivityProcedure.CalendarDate = row.Field<DateTime?>("CalendarDate").ToString();
+                            unitActivityProcedure.Call_Point = row.Field<byte?>("Call_Point");
+                            unitActivityProcedure.Call_Stop = row.Field<byte?>("Call_Stop");
+                            unitActivityProcedure.Call_Type_ID = row.Field<int?>("Call_Type_ID");
+                            unitActivityProcedure.Detail_Id = row.Field<int?>("Detail_Id");
+                            unitActivityProcedure.Device_Extension = row.Field<string>("Device_Extension");
+                            unitActivityProcedure.Device_ID = row.Field<int?>("Device_ID");
+                            unitActivityProcedure.Device_Type_Desc = row.Field<string>("Device_Type_Desc");
+                            unitActivityProcedure.Elapsed_Time = row.Field<int?>("Elapsed_Time");
+                            unitActivityProcedure.Event_Id = row.Field<int?>("Event_Id");
+                            unitActivityProcedure.Event_Time = row.Field<DateTime?>("Event_Time").ToString();
+                            unitActivityProcedure.Fact_Event_Activity_Key = row.Field<int?>("Fact_Event_Activity_Key");
+                            unitActivityProcedure.Facility_Id = row.Field<int?>("Facility_Id");
+                            unitActivityProcedure.Facility_Name = row.Field<string>("Facility_Name");
+                            unitActivityProcedure.Group_Start_Time = row.Field<DateTime?>("Group_Start_Time").ToString();
+                            unitActivityProcedure.In_Room_Duration = row.Field<long?>("In_Room_Duration");
+                            unitActivityProcedure.NumOfConsoleNotifications = row.Field<int?>("NumOfConsoleNotifications");
+                            unitActivityProcedure.NumOfPagerNotifications = row.Field<int?>("NumOfPagerNotifications");
+                            unitActivityProcedure.NumOfPatientCalls = row.Field<int?>("NumOfPatientCalls");
+                            unitActivityProcedure.NumOfPhoneNotifications = row.Field<int?>("NumOfPhoneNotifications");
+                            unitActivityProcedure.NumOfServiceCalls = row.Field<int?>("NumOfServiceCalls");
+                            unitActivityProcedure.NumOfStaffRegCalls = row.Field<int?>("NumOfStaffRegCalls");
+                            unitActivityProcedure.Patient_First_Name = row.Field<string>("Patient_First_Name");
+                            unitActivityProcedure.Patient_Gender = row.Field<string>("Patient_Gender");
+                            unitActivityProcedure.Patient_Last_Name = row.Field<string>("Patient_Last_Name");
+                            unitActivityProcedure.Priority_Desc = row.Field<string>("Priority_Desc");
+                            unitActivityProcedure.Room_Id = row.Field<int?>("Room_Id");
+                            unitActivityProcedure.Room_Name = row.Field<string>("Room_Name");
+                            unitActivityProcedure.Service_Level_ID = row.Field<int?>("Service_Level_ID");
+                            unitActivityProcedure.Service_Level_Name = row.Field<string>("Service_Level_Name");
+                            unitActivityProcedure.Shift_End_Date_Time = row.Field<DateTime?>("Shift_End_Date_Time").ToString();
+                            unitActivityProcedure.Shift_End_Time = row.Field<DateTime?>("Shift_End_Time").ToString();
+                            unitActivityProcedure.Shift_Id = row.Field<int?>("Shift_Id");
+                            unitActivityProcedure.Shift_Name = row.Field<string>("Shift_Name");
+                            unitActivityProcedure.Shift_Start_Date_Time = row.Field<DateTime?>("Shift_Start_Date_Time").ToString();
+                            unitActivityProcedure.Shift_Start_Time = row.Field<DateTime?>("Shift_Start_Time").ToString();
+                            unitActivityProcedure.Staff_First_Name = row.Field<string>("Staff_First_Name");
+                            unitActivityProcedure.Staff_ID = row.Field<int?>("Staff_ID");
+                            unitActivityProcedure.Staff_Last_Name = row.Field<string>("Staff_Last_Name");
+                            unitActivityProcedure.Staff_Response_Time = row.Field<long?>("Staff_Response_Time");
+                            unitActivityProcedure.Summary_Id = row.Field<int?>("Summary_Id");
+                            unitActivityProcedure.SummaryRank = row.Field<int?>("SummaryRank");
+                            unitActivityProcedure.Text_Message = row.Field<string>("Text_Message");
+                            unitActivityProcedure.TotalElapsedTimeInSummary = row.Field<int?>("TotalElapsedTimeInSummary");
+                            unitActivityProcedure.TotalElapsedTimePerDay = row.Field<int?>("TotalElapsedTimePerDay");
+                            unitActivityProcedure.Voice_Response_Time = row.Field<long?>("Voice_Response_Time");
+                            unitActivityProcedure.Zone_ID = row.Field<int?>("Zone_ID");
+                            unitActivityProcedure.Zone_Name = row.Field<string>("Zone_Name");
+
+                            unitActivityProcedureCollection[serverIndex].Add(unitActivityProcedure);
+                        }
+                        
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine("SQL Error: " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+            }
+        }
+
+        // Exit application from top menu exit item
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
+        // Configure settings item event handler
         private void configureServersToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //Create settings form
@@ -128,17 +307,10 @@ namespace ReportAppTest
             }
         }
 
-        private void ReportForm_Load(object sender, EventArgs e)
-        {
-            //db = new Database();
-            InitializeSelectedItems();
-            us = new UserSettings();
-            us.Reload();
-        }
-
+        // Event handler for next page (report type select page)
+        // Test connection to all servers with provided credentials
         private void confirmButton_Click(object sender, EventArgs e)
         {
-            us.Reload();
             db.StoreConnectionStrings(userIDTextBox.Text, passwordTextBox.Text);
             if (db.CONNECTION_SUCCESS)
             {
@@ -146,6 +318,7 @@ namespace ReportAppTest
             }
         }
 
+        // Event handler for next page (report config page)
         private void nextButton_Click(object sender, EventArgs e)
         {
             if (reportListBox.SelectedItem == null)
@@ -158,6 +331,7 @@ namespace ReportAppTest
             this.tabControl1.SelectTab(2);
         }
 
+        // Event handler for previous page (home login page)
         private void reportPanelPrevButton_Click(object sender, EventArgs e)
         {
             db.CONNECTION_SUCCESS = false;
@@ -165,76 +339,87 @@ namespace ReportAppTest
             this.tabControl1.SelectTab(0);
         }
 
+        // Event handler for previous page (report type select page)
         private void configPanelPrevButton_Click(object sender, EventArgs e)
         {
             this.tabControl1.SelectTab(1);
         }
 
+        // Event handler for initial configurations:
+        // run Unit Activity Report stored procedure for selected dates and times
+        // go to next page to select facility
         private void configPanelNextButton_Click(object sender, EventArgs e)
         {
+            // Initialize collections for each server, run queries, and create class collections
+            foreach (var server in Properties.Settings.Default.Servers)
+            {
+                if (!server.Equals("Enter Server Name", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    int serverIndex = Properties.Settings.Default.Servers.IndexOf(server);
+                    zoneCollection[serverIndex] = new List<DimZone>();
+                    locationsCollection[serverIndex] = new List<DimLocation>();
+                    lzCollection[serverIndex] = new LocationZoneCollection();
+                    unitActivityProcedureCollection[serverIndex] = new List<UnitActivityProcedure>();
+                    SQLQueries(server);
+                    AddRowsToCollection(serverIndex);
+                    MergeTables(serverIndex);
+                    GetUnitActivityTable(serverIndex, server, startDatePicker.Value, endDatePicker.Value);
+                }
+            }
+            // Add facilities to listbox on next page
             PopulateFacilityListBox();
+            // Go to next page (select facility page)
             this.tabControl1.SelectTab(3);
         }
 
+        // Event handler for previous page (select facility page)
         private void unitActivityPrevButton_Click(object sender, EventArgs e)
         {
             this.tabControl1.SelectTab(3);
         }
 
+        // Facility listbox populated from settings file
         private void PopulateFacilityListBox()
         {
-            items = new List<string>();
+            facilityList = new List<string>();
             String facility;
             foreach (string name in Properties.Settings.Default.Facilities)
             {
                 if (name != "Enter Server Name")
                 {
                     facility = name.ToUpper();
-                    items.Add(facility);
-                    //OpenSqlConn(server);
+                    facilityList.Add(facility);
                 }
             }
-            facilityListBox.DataSource = items;
+            facilityListBox.DataSource = facilityList;
         }
 
+        // Populate facility combobox and initialize new UnitActivity reports
         private void StoreSelectedFacilities()
         {
-            List<String> facilities = new List<string>();
-            //String strItem;
-            //DataTable data = new DataTable();
-            //data.Columns.Add("Facilities");
-            //foreach (var name in facilityListBox.SelectedItems)
+            reports.Clear();
+            foreach (var facility in facilityListBox.SelectedItems)
             {
-                //data.Rows.Add(name.ToString());
-            }
-            
-            for (int i = 0; i < facilityListBox.Items.Count; i++)
-            {
-                if (facilityListBox.GetSelected(i))
-                {
-                    facilities.Add(facilityListBox.Text);
-                }
+                reports.Add(new UnitActivityReport(facilityListBox.GetItemText(facility)));
             }
 
-                //facilityComboBox.DisplayMember = facilityListBox.SelectedItems.ToString();
             facilityComboBox.DataSource = null;
-            //facilityComboBox.DataSource = Properties.Settings.Default.Facilities;
             facilityComboBox.DataSource = facilityListBox.SelectedItems;
-                //facilityComboBox.DisplayMember = "Facilities";
             facilityComboBox.SelectedIndex = 0;
         }
 
+        // Event handler for previous page (report config page) 
         private void selectFacilityPrevBtn_Click(object sender, EventArgs e)
         {
             this.tabControl1.SelectTab(2);
         }
 
+        // Event handler for next page (unit activity report page)
         private void selectFacilityNextBtn_Click(object sender, EventArgs e)
         {
             if (facilityListBox.SelectedItems.Count > 0)
             {
                 StoreSelectedFacilities();
-                OpenSqlConn();
                 facilityComboBox.SelectedIndex = 0;
                 this.tabControl1.SelectTab(4);
             }
@@ -244,100 +429,11 @@ namespace ReportAppTest
             }
         }
 
-        private void OpenSqlConn()
-        {
-            dsList.Clear();
-            int serverIndex = -1;
-            int i = 0;
-            foreach (var selectedFacility in facilityListBox.Items)
-            {
-                serverIndex++;
-                if (facilityListBox.GetSelected(serverIndex))
-                {
-                    dsList.Add(new DataSet(selectedFacility.ToString()));
-                    /*foreach (String facility in facilityListBox.Items)
-                    {
-
-                    }
-                
-                    foreach (String facilityName in Properties.Settings.Default.Facilities)
-                    {
-                        //serverIndex = facilityComboBox.Items.IndexOf(facility);
-                        if (facilityName.Equals(facility, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            //serverIndex = Properties.Settings.Default.Facilities.IndexOf(facilityName);
-                            serverIndex++;
-                            dsList.Add(new DataSet(facility));
-                            break;
-                        }
-                    }*/
-
-                    String connStr = "Data Source=" + Properties.Settings.Default.Servers[serverIndex] + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID="
-                        + userIDTextBox.Text + ";Password=" + passwordTextBox.Text;
-                    using (SqlConnection conn = new SqlConnection(connStr))
-                    {
-                        SqlDataAdapter dimZoneAdapter = new SqlDataAdapter("select distinct Zone_Name, Zone_ID from dbo.DimZone", conn);
-                        SqlDataAdapter dimLocationAdapter = new SqlDataAdapter("select distinct Room_Name, Room_ID from dbo.DimLocation", conn);
-                        SqlDataAdapter roomAdapter = new SqlDataAdapter("select Room_Name, Room_ID, min(Area_Name) from dbo.DimLocation group by Room_Name, Room_ID", conn);
-                        SqlDataAdapter UnitActivityAdapter = new SqlDataAdapter();
-                        UnitActivityAdapter.SelectCommand = new SqlCommand("dbo.prFactEvent_Get_UnitActivityReport", conn);
-                        UnitActivityAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StartDate", Convert.ToDateTime("4/24/2015"));
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@EndDate", Convert.ToDateTime("4/24/2015"));
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@Locations", "185, 261");
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StartTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@EndTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("FirstShiftStartTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@FirstShiftEndTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@SecondShiftStartTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@SecondShiftEndTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@ThirdShiftStartTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@ThirdShiftEndTime", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@CallTypeIds", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@IncludeMessages", 0);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@CombineUnits", 0);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StaffServiceLevels", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StaffRegistrationLevels", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@StaffIds", System.DBNull.Value);
-                        UnitActivityAdapter.SelectCommand.Parameters.AddWithValue("@ShowBlankRecords", 0);
-
-                        UnitActivityAdapter.Fill(dsList[i], "UnitActivityTable");
-                        //SqlDataAdapter dimFacilityAdapter = new SqlDataAdapter("select * from dbo.DimFacility where Facility_ID=1", conn);
-                        //dimFacilityAdapter.Fill(ds, "dbo.DimFacility");
-                        //facilityListBox.DisplayMember = "Facility_Name";
-                        //facilityListBox.ValueMember = "Facility_ID";
-                        //facilityListBox.DataSource = ds.Tables["dbo.DimFacility"];
-                        dimZoneAdapter.Fill(dsList[i], "dbo.DimZone");
-                        dimLocationAdapter.Fill(dsList[i], "dbo.DimLocation");
-                        roomAdapter.Fill(dsList[i], "roomTable");
-                        
-                        /*zoneListBox.DisplayMember = "Zone_Name";
-                        zoneListBox.ValueMember = "Zone_ID";
-                        zoneListBox.DataSource = dsList[i].Tables["dbo.DimZone"];
-                        roomListBox.DisplayMember = "Room_Name";
-                        roomListBox.ValueMember = "Room_ID";
-                        roomListBox.DataSource = dsList[i].Tables["dbo.DimLocation"];*/
-                    }
-                    i++;
-                }
-            }
-            if (facilityComboBox.Items.Count > 1)
-                facilityComboBox.SelectedIndex = 1;
-            else
-                facilityComboBox_SelectedIndexChanged(facilityComboBox, new EventArgs());
-        }
-
-        private void StoreZoneRoomComboBoxes()
-        {
-
-        }
-
+        // Event handler for facility combobox selection
         private void facilityComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (facilityComboBox.DataSource != null)
             {
-                //if (facilityComboBox.SelectedText.Equals("", StringComparison.InvariantCultureIgnoreCase))
                 string connString = "Data Source=" + Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex] + ";Initial Catalog=" + Properties.Settings.Default.Database + ";User ID=r5_rpt;Password=rpt";
                 string sql = "dbo.pr_ReportFilter_CallType";
 
@@ -372,69 +468,27 @@ namespace ReportAppTest
 
             if (facilityComboBox.SelectedValue != null)
             {
-                //int index = 0;
-                /*foreach (string facility in Properties.Settings.Default.Facilities)
+                // Get index of currently selected facility
+                foreach (var facility in Properties.Settings.Default.Facilities)
                 {
-                    if (facility.Equals(facilityComboBox.SelectedValue.ToString(), StringComparison.InvariantCultureIgnoreCase))
+                    if (facility.Equals(facilityComboBox.GetItemText(facilityComboBox.SelectedItem), StringComparison.InvariantCultureIgnoreCase))
                     {
-                        index = Properties.Settings.Default.Facilities.IndexOf(facility);
-                    }
-                }*/
-                //DataSet set = dsList.Find(item => item.DataSetName.Equals(Properties.Settings.Default.Servers[index], StringComparison.InvariantCultureIgnoreCase));
-                set = null;
-                if (dsList.Count != 0)
-                    set = dsList[facilityComboBox.SelectedIndex];
-                if (set != null)
-                {
-                    zoneListBox.DisplayMember = "Zone_Name";
-                    zoneListBox.ValueMember = "Zone_ID";
-                    zoneListBox.DataSource = set.Tables["dbo.DimZone"];
-                    roomListBox.DataSource = set.Tables["dbo.DimLocation"];
-                    roomListBox.DisplayMember = "Room_Name";
-                    roomListBox.ValueMember = "Room_ID";
-                    
-                    //roomListBox.DataSource = zoneListBox.SelectedItems;
-                }
-                //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
-                //OpenSqlConn(server);
-                foreach (string facilityName in Properties.Settings.Default.Facilities)
-                {
-                    if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
-                        UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
-                }
-
-                int i = 0;
-                if (selectedZItems != null && selectedRItems != null)
-                {
-                    for (i = 0; i < zoneListBox.Items.Count; i++)
-                    {
-                        for (int j = 0; j < selectedZItems[facilityComboBox.SelectedIndex].Count; j++)
-                        {
-                            if (selectedZItems[facilityComboBox.SelectedIndex][j].Equals(zoneListBox.GetItemText(zoneListBox.Items[i])))
-                            {
-                                zoneListBox.SetSelected(i, true);
-                            }
-                        }
-                    }
-                    for (i = 0; i < roomListBox.Items.Count; i++)
-                    {
-                        for (int j = 0; j < selectedRItems[facilityComboBox.SelectedIndex].Count; j++)
-                        {
-                            if (selectedRItems[facilityComboBox.SelectedIndex][j].Equals(roomListBox.GetItemText(roomListBox.Items[i])))
-                            {
-                                this.roomListBox.SetSelected(i, true);
-                            }
-                        }
+                        facilityIndex = Properties.Settings.Default.Facilities.IndexOf(facility);
                     }
                 }
+                
+                zoneListBox.DisplayMember = "Zone_Name";
+                zoneListBox.ValueMember = "Zone_ID";
+                zoneListBox.DataSource = lzCollection[facilityIndex].GetZoneList();
             }
-
+            
             if (currentFacilityComboValue != facilityComboBox.SelectedIndex)
             {
                 ResetFacilitySaveButton();
             }
         }
 
+        // Reset save button when facility combobox changed
         private void ResetFacilitySaveButton()
         {
             this.pictureBox1.Image = null;
@@ -443,65 +497,74 @@ namespace ReportAppTest
             this.currentFacilityComboValue = facilityComboBox.SelectedIndex;
         }
 
+        // Event handler to open and run new reports
         private void reportNextButton_Click(object sender, EventArgs e)
         {
-            UnitActivityReport.SetLocations(zoneListBox, roomListBox,  facilityComboBox.SelectedItem.ToString());
-            /*this.reportViewer1.ServerReport.ReportServerUrl = new System.Uri(Properties.Settings.Default.URI);
-            ReportParameter param = new ReportParameter("Locations", UnitActivityReport.locations[0]);*/
-            UnitActivityReport.startDate = startDatePicker.Value;
-            UnitActivityReport.endDate = endDatePicker.Value;
-            /*var startDate = new ReportParameter("StartDate", UnitActivityReport.startDate.ToString("MM/dd/yyyy"));
-            var endDate = new ReportParameter("EndDate", UnitActivityReport.endDate.ToString("MM/dd/yyyy"));
-            this.reportViewer1.ServerReport.SetParameters(param);
-            this.reportViewer1.ServerReport.SetParameters(startDate);
-            this.reportViewer1.ServerReport.SetParameters(endDate);
-            string val = null;
-            this.reportViewer1.ServerReport.SetParameters(new ReportParameter("CallTypeIds", val));
-            string value = "true";
-            this.reportViewer1.ServerReport.SetParameters(new ReportParameter("ShowBlankRecords", value));
-            this.reportViewer1.ServerReport.SetParameters(new ReportParameter("PrintedBy", "GUY"));
-            this.reportViewer1.ShowParameterPrompts = false;
-            this.tabControl1.SelectTab(5);
-            this.MaximumSize = new System.Drawing.Size(0, 0);
-            //this.Size = new System.Drawing.Size(825, 850);
-            this.WindowState = FormWindowState.Maximized;*/
-            ReportViewerForm reportViewer = new ReportViewerForm();
-            using (reportViewer)
+            if (roomListBox.SelectedItems.Count == 0)
             {
-                reportViewer.ShowDialog();
+                MessageBox.Show("Please select at least one zone and one room.", "No Selection Made", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            //this.reportViewer1.RefreshReport();
+
+            // Assign report parameters for each server
+            foreach (var report in reports)
+            {
+                if (facilityComboBox.GetItemText(facilityComboBox.SelectedItem).Equals(report.reportName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    report.locationString = locationParam.ToString();
+                    report.callTypeString = callTypeParam.ToString();
+                    report.startDate = startDatePicker.Value;
+                    report.endDate = endDatePicker.Value;
+                }
+            }
+            // Launch new reports in new forms
+            foreach (var report in reports)
+            {
+                var form = new ReportViewerForm(report);
+                form.Shown += (o, args) => { this.Enabled = false; };
+                form.FormClosed += (o, args) => { this.Enabled = true; };
+                form.Show();
+            }
         }
 
+        // Event handler to save facility parameters for the selected facility
         private void confirmFacilityButton_Click(object sender, EventArgs e)
         {
             if (facilityComboBox.SelectedValue != null)
             {
-                if (zoneListBox.SelectedItems.Count != 0 && roomListBox.SelectedItems.Count != 0)
+                if (roomListBox.SelectedItems.Count != 0)
                 {
-                    selectedZItems[facilityComboBox.SelectedIndex].Clear();
-                    selectedRItems[facilityComboBox.SelectedIndex].Clear();
-                    /*var zoneItems = new ListBox.SelectedObjectCollection(zoneListBox);
-                    var roomItems = new ListBox.SelectedObjectCollection(roomListBox);
-                    selectedZoneItems = zoneItems;
-                    selectedRoomItems = roomItems;*/
-                    for (int i = 0; i < zoneListBox.SelectedItems.Count; i++)
+                    locationParam.Clear();
+                    // Create location parameter string
+                    foreach (UnitActivityProcedure selectedRoom in roomListBox.SelectedItems)
                     {
-                        selectedZItems[facilityComboBox.SelectedIndex].Add(zoneListBox.GetItemText(zoneListBox.SelectedItems[i]));
+                        var zoneID = selectedRoom.Zone_ID;
+                        var roomID = selectedRoom.Room_Id;
+                        locationParam.Append(zoneID);
+                        locationParam.Append(",");
+                        locationParam.Append(roomID);
+                        locationParam.Append(";");
                     }
-                    for (int j = 0; j < roomListBox.SelectedItems.Count; j++)
+                    callTypeParam.Clear();
+                    // Create call type parameter string
+                    foreach (DataRowView callType in callTypeListBox.SelectedItems)
                     {
-                        selectedRItems[facilityComboBox.SelectedIndex].Add(roomListBox.GetItemText(roomListBox.SelectedItems[j]));
+                        var callTypeID = callType[2];
+                        callTypeParam.Append(callTypeID);
+                        callTypeParam.Append(";");
                     }
 
-                    //string server = Properties.Settings.Default.Servers[facilityComboBox.SelectedIndex];
-                    //OpenSqlConn(server);
-                    UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
-                    /*foreach (string facilityName in Properties.Settings.Default.Facilities)
+                    // Assign UI selected parameters to UnitActivityReport class member variables
+                    foreach (var report in reports)
                     {
-                        if (facilityComboBox.SelectedItem.ToString().Equals(facilityName, StringComparison.InvariantCultureIgnoreCase))
-                            UnitActivityReport.SetLocations(zoneListBox, roomListBox, facilityComboBox.SelectedItem.ToString());
-                    }*/
+                        if (facilityComboBox.GetItemText(facilityComboBox.SelectedItem).Equals(report.reportName, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            report.locationString = locationParam.ToString();
+                            report.callTypeString = callTypeParam.ToString();
+                            report.startDate = startDatePicker.Value;
+                            report.endDate = endDatePicker.Value;
+                        }
+                    }        
 
                     this.confirmFacilityButton.Text = "Facility " + facilityComboBox.SelectedItem.ToString() + " Saved";
                     this.confirmFacilityButton.Enabled = false;
@@ -514,26 +577,47 @@ namespace ReportAppTest
             }
         }
 
+        // Event handler for zone selection listbox
         private void zoneListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Reset save button if zone selection changes
             ResetFacilitySaveButton();
 
-            /*if (set != null && zoneListBox.SelectedItem != null)
+            // Populate room listbox based on selected zones
+            if (zoneListBox.SelectedItems != null)
             {
-                if (zoneListBox.GetItemText(zoneListBox.SelectedItem) != "All")
+                roomListBox.Enabled = true;
+                List<UnitActivityProcedure> appended = new List<UnitActivityProcedure>();
+                foreach (LocationZone zone in zoneListBox.SelectedItems)
                 {
-                    DataView tableFilter = new DataView(set.Tables["dbo.roomTable"]);
-                    tableFilter.RowFilter = "Column_1 = '" +zoneListBox.GetItemText(zoneListBox.SelectedItem) + "'";
-                    roomListBox.DisplayMember = "Room_Name";
-                    roomListBox.ValueMember = "Room_ID";
-                    roomListBox.DataSource = tableFilter;
-                    //roomListBox.DataSource = set.Tables["roomTable"].Select("Column1 = " + zoneListBox.GetItemText(zoneListBox.SelectedItem));
+                    foreach (var location in unitActivityProcedureCollection[facilityIndex])
+                    {
+                        if (location.Zone_ID == zone.Zone_ID && location.Room_Id != null)
+                        {
+                            if (!location.DuplicateExists(appended))
+                            {
+                                appended.Add(location);
+                            }
+                        }
+                    }
                 }
-            }*/
+                roomListBox.DisplayMember = "Room_Name";
+                roomListBox.ValueMember = "Room_ID";
+                roomListBox.DataSource = appended;
+                // If no rooms in zone, listbox displays "no rooms" and is disabled
+                if (roomListBox.Items.Count == 0)
+                {
+                    roomListBox.Enabled = false;
+                    roomListBox.DataSource = null;
+                    roomListBox.Items.Insert(0, "No rooms for selected dates");
+                }
+            }
         }
 
+        // Event handler for changing selected rooms
         private void roomListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Reset save button if selections are modified
             ResetFacilitySaveButton();
         }
 

@@ -29,17 +29,14 @@
         private void InitializeComponent()
         {
             this.reportViewerTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.reportViewer2 = new Microsoft.Reporting.WinForms.ReportViewer();
             this.reportViewer1 = new Microsoft.Reporting.WinForms.ReportViewer();
             this.reportViewerTableLayoutPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // reportViewerTableLayoutPanel
             // 
-            this.reportViewerTableLayoutPanel.ColumnCount = 2;
+            this.reportViewerTableLayoutPanel.ColumnCount = 1;
             this.reportViewerTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.reportViewerTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.reportViewerTableLayoutPanel.Controls.Add(this.reportViewer2, 1, 0);
             this.reportViewerTableLayoutPanel.Controls.Add(this.reportViewer1, 0, 0);
             this.reportViewerTableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.reportViewerTableLayoutPanel.Location = new System.Drawing.Point(0, 0);
@@ -50,18 +47,6 @@
             this.reportViewerTableLayoutPanel.Size = new System.Drawing.Size(984, 580);
             this.reportViewerTableLayoutPanel.TabIndex = 0;
             // 
-            // reportViewer2
-            // 
-            this.reportViewer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.reportViewer2.Location = new System.Drawing.Point(495, 3);
-            this.reportViewer2.Name = "reportViewer2";
-            this.reportViewer2.ProcessingMode = Microsoft.Reporting.WinForms.ProcessingMode.Remote;
-            this.reportViewerTableLayoutPanel.SetRowSpan(this.reportViewer2, 2);
-            this.reportViewer2.ServerReport.ReportPath = "/R5Reports/Unit Activity Report";
-            this.reportViewer2.ServerReport.ReportServerUrl = new System.Uri("http://REPORT:80/reportserver", System.UriKind.Absolute);
-            this.reportViewer2.Size = new System.Drawing.Size(486, 574);
-            this.reportViewer2.TabIndex = 1;
-            // 
             // reportViewer1
             // 
             this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -71,7 +56,7 @@
             this.reportViewerTableLayoutPanel.SetRowSpan(this.reportViewer1, 2);
             this.reportViewer1.ServerReport.ReportPath = "/R5Reports/Unit Activity Report";
             this.reportViewer1.ServerReport.ReportServerUrl = new System.Uri("http://REPORT2:80/reportserver", System.UriKind.Absolute);
-            this.reportViewer1.Size = new System.Drawing.Size(486, 574);
+            this.reportViewer1.Size = new System.Drawing.Size(978, 574);
             this.reportViewer1.TabIndex = 0;
             // 
             // ReportViewerForm
@@ -94,6 +79,5 @@
 
         private System.Windows.Forms.TableLayoutPanel reportViewerTableLayoutPanel;
         private Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
-        private Microsoft.Reporting.WinForms.ReportViewer reportViewer2;
     }
 }

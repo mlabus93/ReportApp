@@ -635,7 +635,7 @@
             this.unitActivityPanel.ColumnCount = 3;
             this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 64.85788F));
             this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35.14212F));
-            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 410F));
+            this.unitActivityPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 411F));
             this.unitActivityPanel.Controls.Add(this.callTypeListBox, 0, 5);
             this.unitActivityPanel.Controls.Add(this.unitActivityLabel, 0, 0);
             this.unitActivityPanel.Controls.Add(this.label3, 0, 1);
@@ -738,7 +738,7 @@
             // 
             this.confirmFacilityButton.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.confirmFacilityButton.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.confirmFacilityButton.Location = new System.Drawing.Point(31, 215);
+            this.confirmFacilityButton.Location = new System.Drawing.Point(30, 215);
             this.confirmFacilityButton.Name = "confirmFacilityButton";
             this.confirmFacilityButton.Size = new System.Drawing.Size(175, 35);
             this.confirmFacilityButton.TabIndex = 24;
@@ -751,7 +751,7 @@
             this.zoneListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.zoneListBox.FormattingEnabled = true;
             this.zoneListBox.ItemHeight = 16;
-            this.zoneListBox.Location = new System.Drawing.Point(368, 156);
+            this.zoneListBox.Location = new System.Drawing.Point(367, 156);
             this.zoneListBox.Name = "zoneListBox";
             this.unitActivityPanel.SetRowSpan(this.zoneListBox, 2);
             this.zoneListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
@@ -764,7 +764,7 @@
             this.label1.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(368, 116);
+            this.label1.Location = new System.Drawing.Point(367, 116);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(108, 20);
             this.label1.TabIndex = 7;
@@ -775,7 +775,7 @@
             this.label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(368, 275);
+            this.label5.Location = new System.Drawing.Point(367, 275);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(61, 20);
             this.label5.TabIndex = 9;
@@ -786,7 +786,7 @@
             this.roomListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.roomListBox.FormattingEnabled = true;
             this.roomListBox.ItemHeight = 16;
-            this.roomListBox.Location = new System.Drawing.Point(368, 315);
+            this.roomListBox.Location = new System.Drawing.Point(367, 315);
             this.roomListBox.Name = "roomListBox";
             this.unitActivityPanel.SetRowSpan(this.roomListBox, 2);
             this.roomListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
@@ -810,7 +810,7 @@
             // 
             this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.pictureBox1.InitialImage = null;
-            this.pictureBox1.Location = new System.Drawing.Point(240, 216);
+            this.pictureBox1.Location = new System.Drawing.Point(239, 216);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(32, 32);
             this.pictureBox1.TabIndex = 25;
@@ -893,10 +893,6 @@
             this.configureServersToolStripMenuItem.Text = "Configure Servers";
             this.configureServersToolStripMenuItem.Click += new System.EventHandler(this.configureServersToolStripMenuItem_Click);
             // 
-            // userSettingsBindingSource
-            // 
-            this.userSettingsBindingSource.DataSource = typeof(ReportAppTest.UserSettings);
-            // 
             // ReportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -910,7 +906,6 @@
             this.Name = "ReportForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Report";
-            this.Load += new System.EventHandler(this.ReportForm_Load);
             this.toolStripContainer1.ContentPanel.ResumeLayout(false);
             this.toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
             this.toolStripContainer1.TopToolStripPanel.PerformLayout();

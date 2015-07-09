@@ -52,12 +52,13 @@ namespace ReportAppTest
         }
 
         
-
+        // Function to populate array with textboxes
         private void AddToServerArray(TextBox server, int index)
         {
             servers[index, 0] = server;
         }
         
+        // Function to populate array with labels
         private void AddToServerArray(Label server, int index)
         {
             servers[index, 1] = server;
@@ -84,11 +85,6 @@ namespace ReportAppTest
             {
                 serverTextBox.Text = "Enter Server Name";
                 serverTextBox.ForeColor = SystemColors.InactiveCaptionText;
-            }
-            else
-            {
-                //if (serverTextBox.TabIndex-1 <= Properties.Settings.Default.ServerCount)
-                    //Properties.Settings.Default.Servers[serverTextBox.TabIndex - 1] = serverTextBox.Text;
             }
         }
 
@@ -143,7 +139,6 @@ namespace ReportAppTest
                 Label label = (Label)servers[j, 1];
                 TextBox textBox = (TextBox)servers[j, 0];
                 textBox.Text = "Enter Server Name";
-                //Properties.Settings.Default.Servers[j] = "Enter Server Name";
             }
         }
         
@@ -174,12 +169,12 @@ namespace ReportAppTest
             this.Close();
         }
 
+        // Save settings to file and close form
         private void saveSettingsButton_Click(object sender, EventArgs e)
-        {
-           
+        {   
             TextBox currentTextBox;
             
-
+            // Form validation
             for (int k=0; k<serverCounter.Value; k++)
             {
                 currentTextBox = (TextBox)servers[k, 0];
@@ -200,31 +195,21 @@ namespace ReportAppTest
                     return;
                 }
             }
+
+            // Clear previous settings and store new settings
             Properties.Settings.Default.Servers.Clear();
             for (int i=0; i<serverCounter.Value; i++)
             {
                 currentTextBox = (TextBox)servers[i, 0];
-                Properties.Settings.Default.Servers.Remove("null");
                 Properties.Settings.Default.Servers.Insert(i, currentTextBox.Text);
-                //us.ServerName[i] = currentTextBox.Text;
                 currentTextBox.DataBindings.Add("Text", Properties.Settings.Default, "Servers");
-
-                if (currentTextBox.Text.Equals("Enter Server Name"))
-                    MessageBox.Show("Enter All Server Names");
-                
             }
             for (int j = (int)serverCounter.Value; j < MAX_SERVER_COUNT; j++ )
             {
                 currentTextBox = (TextBox)servers[j, 0];
                 Properties.Settings.Default.Servers.Insert(j, currentTextBox.Text);
-                //us.ServerName[j] = (String)us.Properties["ServerName"].DefaultValue;
-                //currentTextBox.DataBindings.Add("Text", us, "ServerName");
 
             }
-           
-            /*us.ServerCount = (int)serverCounter.Value;
-            us.Database = (String)databaseTextBox.Text;
-            us.SettingsFlag = true;*/
 
             Properties.Settings.Default.ServerCount = (int)serverCounter.Value;
             Properties.Settings.Default.Database = (String)databaseTextBox.Text;
@@ -232,10 +217,10 @@ namespace ReportAppTest
             
             Properties.Settings.Default.Save();
             this.DialogResult = (DialogResult)1;
-            //us.Save();
             this.Close();
         }
 
+        // Load settings for saved servers and database
         private void SettingsForm_Load(object sender, EventArgs e)
         {
             bool flag = Properties.Settings.Default.Flag;
@@ -262,16 +247,12 @@ namespace ReportAppTest
                     TextBox currentTextBox;
                     serverCounter.Value = Properties.Settings.Default.ServerCount;
                     databaseTextBox.Text = Properties.Settings.Default.Database;
-                    //us.Reload();
-                    //serverCounter.Value = us.ServerCount;
-                    //databaseTextBox.Text = us.Database;
                     if (databaseTextBox.Text != "Enter Database Name")
                         databaseTextBox.ForeColor = DefaultForeColor;
 
                     for (int i = 0; i < serverCounter.Value; i++)
                     {
                         currentTextBox = (TextBox)servers[i, 0];
-                        //currentTextBox.Text = us.ServerName[i];
                         currentTextBox.Text = Properties.Settings.Default.Servers[i].ToString();
                         currentTextBox.ForeColor = DefaultForeColor;
                     }

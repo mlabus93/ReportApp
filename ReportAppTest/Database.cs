@@ -12,7 +12,6 @@ namespace ReportAppTest
     {
         public static Boolean _CONNECTION_SUCCESS = true;
         static List<SqlConnection> sqlConns = new List<SqlConnection>();
-        static UserSettings uSettings = new UserSettings();
         static SqlConnection sqlTest = new SqlConnection();
         SqlConnection conn = new SqlConnection();
         String[] facilities = new String[10];
@@ -24,8 +23,6 @@ namespace ReportAppTest
 
         private void Iniitialize()
         {
-            //load user application settings
-            uSettings.Reload();
             sqlTest = null;
         }
 
@@ -42,7 +39,6 @@ namespace ReportAppTest
 
         public void StoreConnectionStrings(String ID, String pass)
         {
-            uSettings.Reload();
             if (ID.Equals("") || pass.Equals(""))
             {
                 MessageBox.Show("Enter Username and Password");
@@ -61,6 +57,7 @@ namespace ReportAppTest
                 this.CONNECTION_SUCCESS = true;
         }
 
+        // Test database connection and add facility to settings
         public bool TestConnection(int index)
         {
             try
@@ -93,26 +90,12 @@ namespace ReportAppTest
             }
         }
 
+        // Remove connections if failed
         public void RemoveConnections()
         {
             sqlConns.RemoveRange(0, sqlConns.Count);
             for (int i = 0; i < sqlConns.Count; i++)
             { }
-        }
-
-        public void ExecuteQueries(int index)
-        {
-            try
-            {
-                using (sqlTest = sqlConns[index])
-                {
-                    sqlTest.Open();
-                }
-            }
-            catch (SqlException)
-            {
-
-            }
         }
 
         public Boolean CONNECTION_SUCCESS
